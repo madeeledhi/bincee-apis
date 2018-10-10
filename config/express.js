@@ -44,14 +44,15 @@ if (config.env === 'development') {
             meta: true, // optional: log meta data about request (defaults to true)
             msg:
                 'HTTP {{req.method}} {{req.url}} {{res.statusCode}} {{res.responseTime}}ms',
-            colorStatus: true, // Color the status code (default green, 3XX cyan, 4XX yellow, 5XX red).
+            colorStatus: true,
+            // Color the status code (default green, 3XX cyan, 4XX yellow, 5XX red).
         })
     )
 }
 
 // Get API Version from .env (or else assume 1.0)
 // const baseUrl = `/api/v${config.apiVersion}`;
-const baseUrl = `/api`
+const baseUrl = '/api'
 
 // mount all routes on /api path
 app.use(`${baseUrl}`, routes)
