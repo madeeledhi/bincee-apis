@@ -2,13 +2,11 @@ import jwt from 'jsonwebtoken'
 import httpStatus from 'http-status'
 import APIError from '../helpers/APIError'
 import config from '../../config/config'
+import db from '../../config/sequelize'
 
 // sample user, used for authentication
-const user = {
-    username: 'react',
-    password: 'express',
-    type: '1',
-}
+
+const User = db.User
 
 /**
  * Returns jwt token if valid username and password is provided
@@ -20,29 +18,22 @@ const user = {
 function login(req, res, next) {
     // Ideally you'll fetch this from the db
     // Idea here was to show how jwt works with simplicity
-    if (
-        req.body.username === user.username &&
-        req.body.password === user.password
-    ) {
-        const token = jwt.sign(
-            {
-                username: user.username,
-                expiresIn: 3600,
-            },
-            config.jwtSecret
-        )
-        return res.json({
-            token,
-            ...user,
+    const { username, password } = req.body
+    User.findOne({
+        where: {
+            username,
+            password,
+        },
+    })
+        .then(resUser => {
+            if (!resUser) {
+                return res.status(404).json({})
+            }
+            return res.status(200).json(resUser)
         })
-    }
-
-    const err = new APIError(
-        'Authentication error',
-        httpStatus.UNAUTHORIZED,
-        true
-    )
-    return next(err)
+        .catch(err => {
+            return res.status(500).json(err)
+        })
 }
 
 /**

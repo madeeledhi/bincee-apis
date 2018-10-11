@@ -1,6 +1,7 @@
 import httpStatus from 'http-status'
 import jwt from 'jsonwebtoken'
 import db from '../../config/sequelize'
+import config from '../../config/config'
 
 const User = db.User
 
@@ -37,21 +38,33 @@ function get(req, res) {
  */
 function create(req, res, next) {
     const { username, password, type } = req.body
+    const { accesstoken } = req.headers
+    if (!accesstoken) {
+        return res.status(401).json({ message: 'No token provided.' })
+    }
+    return jwt.verify(accesstoken, config.jwtSecret, (err, decoded) => {
+        if (err) {
+            return res.status(500)
+        }
+        const token = jwt.sign({ username }, config.jwtSecret)
+        return User.findOne({
+            where: {
+                username,
+                password,
+            },
+        }).then(resUser => {
+            if (!resUser) {
+                const user = User.build({ username, password, type, token })
 
-    const token = jwt.sign(
-        { username, expiresIn: 100000000000 },
-        config.jwtSecret
-    )
-    const user = User.build({
-        username,
-        password,
-        type,
-        token,
+                return user
+                    .save()
+                    .then(savedUser => res.status(200).json(savedUser))
+                    .catch(e => next(e))
+            }
+
+            return res.status(302).json({ message: 'User Already Exists' })
+        })
     })
-
-    user.save()
-        .then(savedUser => res.json(savedUser))
-        .catch(e => next(e))
 }
 
 /**
