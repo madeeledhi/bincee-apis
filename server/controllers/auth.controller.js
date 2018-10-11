@@ -1,12 +1,12 @@
+// libs
 import jwt from 'jsonwebtoken'
 import httpStatus from 'http-status'
+import getOr from 'lodash/fp/getOr'
+
+// src
 import APIError from '../helpers/APIError'
 import config from '../../config/config'
-import db from '../../config/sequelize'
-
-// sample user, used for authentication
-
-const User = db.User
+import { User } from '../../config/sequelize'
 
 /**
  * Returns jwt token if valid username and password is provided
@@ -18,7 +18,7 @@ const User = db.User
 function login(req, res, next) {
     // Ideally you'll fetch this from the db
     // Idea here was to show how jwt works with simplicity
-    const { username, password } = req.body
+    const { username, password } = getOr({}, 'body')(req)
     User.findOne({
         where: {
             username,
@@ -44,7 +44,7 @@ function login(req, res, next) {
  */
 function getRandomNumber(req, res) {
     // req.user is assigned by jwt middleware if valid token is provided
-    return res.json({
+    return res.status(200).json({
         user: req.user,
         num: Math.random() * 100,
     })

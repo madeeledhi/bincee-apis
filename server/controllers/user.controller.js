@@ -1,9 +1,11 @@
-import httpStatus from 'http-status'
+// libs
 import jwt from 'jsonwebtoken'
-import db from '../../config/sequelize'
-import config from '../../config/config'
+import httpStatus from 'http-status'
+import getOr from 'lodash/fp/getOr'
 
-const User = db.User
+// src
+import { User } from '../../config/sequelize'
+import config from '../../config/config'
 
 /**
  * Load user and append to req.
@@ -26,8 +28,16 @@ function load(req, res, next, id) {
  * Get user
  * @returns {User}
  */
-function get(req, res) {
-    return res.json(req.user)
+function getUserById(req, res) {
+    return res.status(200).json(req.user)
+}
+
+function getUserByUsername(req, res) {
+    const { username } = getOr({}, 'query')(req)
+
+    return User.findOne({ where: { username } }).then(resUser => {
+        return res.status(200).json(resUser)
+    })
 }
 
 /**
@@ -37,33 +47,25 @@ function get(req, res) {
  * @returns {User}
  */
 function create(req, res, next) {
-    const { username, password, type } = req.body
-    const { accesstoken } = req.headers
-    if (!accesstoken) {
-        return res.status(401).json({ message: 'No token provided.' })
-    }
-    return jwt.verify(accesstoken, config.jwtSecret, (err, decoded) => {
-        if (err) {
-            return res.status(500)
+    const { username, password, type } = getOr({}, 'body')(req)
+
+    const token = jwt.sign({ username }, config.jwtSecret)
+    return User.findOne({
+        where: {
+            username,
+            password,
+        },
+    }).then(resUser => {
+        if (!resUser) {
+            const user = User.build({ username, password, type, token })
+
+            return user
+                .save()
+                .then(savedUser => res.status(200).json(savedUser))
+                .catch(e => next(e))
         }
-        const token = jwt.sign({ username }, config.jwtSecret)
-        return User.findOne({
-            where: {
-                username,
-                password,
-            },
-        }).then(resUser => {
-            if (!resUser) {
-                const user = User.build({ username, password, type, token })
 
-                return user
-                    .save()
-                    .then(savedUser => res.status(200).json(savedUser))
-                    .catch(e => next(e))
-            }
-
-            return res.status(302).json({ message: 'User Already Exists' })
-        })
+        return res.status(302).json({ message: 'User Already Exists' })
     })
 }
 
@@ -73,11 +75,12 @@ function create(req, res, next) {
  * @property {string} req.body.mobileNumber - The mobileNumber of user.
  * @returns {User}
  */
-function update(req, res, next) {
+function updateUserById(req, res, next) {
     const user = req.user
     user.username = req.body.username
 
-    user.save()
+    return user
+        .save()
         .then(savedUser => res.json(savedUser))
         .catch(e => next(e))
 }
@@ -99,7 +102,7 @@ function list(req, res, next) {
  * Delete user.
  * @returns {User}
  */
-function remove(req, res, next) {
+function removeUserById(req, res, next) {
     const user = req.user
     const username = req.user.username
     user.destroy()
@@ -107,4 +110,12 @@ function remove(req, res, next) {
         .catch(e => next(e))
 }
 
-export default { load, get, create, update, list, remove }
+export default {
+    load,
+    getUserById,
+    getUserByUsername,
+    create,
+    updateUserById,
+    list,
+    removeUserById,
+}

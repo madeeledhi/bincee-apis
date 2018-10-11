@@ -1,30 +1,40 @@
-import express from 'express';
-import validate from 'express-validation';
-import paramValidation from '../../config/param-validation';
-import userCtrl from '../controllers/user.controller';
+// libs
+import express from 'express'
+import validate from 'express-validation'
 
-const router = express.Router(); // eslint-disable-line new-cap
+// src
+import paramValidation from '../../config/param-validation'
+import userCtrl from '../controllers/user.controller'
 
-router.route('/')
+const router = express.Router() // eslint-disable-line new-cap
 
-    /** GET /api/users - Get list of users */
-    .get(userCtrl.list)
+/** GET /api/users - Get list of users */
+router.route('/list').get(userCtrl.list)
 
-    /** POST /api/users - Create new user */
-    .post(validate(paramValidation.createUser), userCtrl.create);
+/** POST /api/users - Create new user */
+router
+    .route('/create')
+    .post(validate(paramValidation.createUser), userCtrl.create)
 
-router.route('/:userId')
+router
+    .route('/:userId')
 
     /** GET /api/users/:userId - Get user */
-    .get(userCtrl.get)
+    .get(userCtrl.getUserById)
 
     /** PUT /api/users/:userId - Update user */
-    .put(validate(paramValidation.updateUser), userCtrl.update)
+    .put(validate(paramValidation.updateUser), userCtrl.updateUserById)
 
     /** DELETE /api/users/:userId - Delete user */
-    .delete(userCtrl.remove);
+    .delete(userCtrl.removeUserById)
+
+router
+    .route('/')
+
+    /** GET /api/users/:userId - Get user */
+    .get(userCtrl.getUserByUsername)
 
 /** Load user when API with userId route parameter is hit */
-router.param('userId', userCtrl.load);
+router.param('userId', userCtrl.load)
 
-export default router;
+export default router

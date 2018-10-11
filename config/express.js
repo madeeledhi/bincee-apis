@@ -13,6 +13,8 @@ import winstonInstance from './winston'
 import routes from '../server/routes/index.route'
 import config from './config'
 import APIError from '../server/helpers/APIError'
+import jwt from '../server/helpers/jwt'
+import errorHandler from '../server/helpers/errorHandler'
 
 const app = express()
 
@@ -45,7 +47,7 @@ if (config.env === 'development') {
             msg:
                 'HTTP {{req.method}} {{req.url}} {{res.statusCode}} {{res.responseTime}}ms',
             colorStatus: true, // Color the status code (default green, 3XX cyan, 4XX yellow, 5XX red).
-        })
+        }),
     )
 }
 
@@ -53,8 +55,14 @@ if (config.env === 'development') {
 // const baseUrl = `/api/v${config.apiVersion}`;
 const baseUrl = `/api`
 
+// use JWT auth to secure the api
+app.use(jwt())
+
 // mount all routes on /api path
 app.use(`${baseUrl}`, routes)
+
+// global error handler
+app.use(errorHandler)
 
 // if error is not an instanceOf APIError, convert it.
 app.use((err, req, res, next) => {
@@ -83,7 +91,7 @@ if (config.env !== 'test') {
     app.use(
         expressWinston.errorLogger({
             winstonInstance,
-        })
+        }),
     )
 }
 
@@ -92,12 +100,13 @@ app.use((
     err,
     req,
     res,
-    next // eslint-disable-line no-unused-vars
+    next, // eslint-disable-line no-unused-vars
 ) =>
     res.status(err.status).json({
         message: err.isPublic ? err.message : httpStatus[err.status],
         stack: config.env === 'development' ? err.stack : {},
-    })
+        stack: config.env === 'development' ? err.stack : {},
+    }),
 )
 
 export default app
