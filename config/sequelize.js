@@ -2,7 +2,7 @@ import Sequelize from 'sequelize'
 import jwt from 'jsonwebtoken'
 import fs from 'fs'
 import path from 'path'
-import _ from 'lodash'
+import extend from 'lodash/extend'
 import config from './config'
 
 const db = {}
@@ -56,7 +56,6 @@ fs.readdirSync(modelsDir)
         const model = sequelize.import(path.join(modelsDir, file))
         db[model.name] = model
     })
-console.log('db', db)
 
 // Synchronizing any model changes with database.
 sequelize
@@ -64,7 +63,7 @@ sequelize
     .then(() => {
         const { username, password, type } = user
         console.log('Database synchronized') // eslint-disable-line no-console
-        db.User.findOne({
+        return db.User.findOne({
             where: {
                 username,
                 password,
@@ -91,7 +90,7 @@ sequelize
     })
 
 // assign the sequelize variables to the db object and returning the db.
-module.exports = _.extend(
+module.exports = extend(
     {
         sequelize,
         Sequelize,

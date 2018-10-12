@@ -1,4 +1,4 @@
-import { tableConfig } from '../utils/dbUtils'
+import { tableConfig } from '../utils'
 /**
  * User Schema
  */

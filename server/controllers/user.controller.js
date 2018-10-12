@@ -4,14 +4,14 @@ import httpStatus from 'http-status'
 import getOr from 'lodash/fp/getOr'
 
 // src
-import { User } from '../../config/sequelize'
+import { findOne, listAll, findById, createOne } from '../utils'
 import config from '../../config/config'
 
 /**
  * Load user and append to req.
  */
 function load(req, res, next, id) {
-    User.findById(id)
+    return findById('User', id)
         .then(user => {
             if (!user) {
                 const e = new Error('User does not exist')
@@ -34,8 +34,7 @@ function getUserById(req, res) {
 
 function getUserByUsername(req, res) {
     const { username } = getOr({}, 'query')(req)
-
-    return User.findOne({ where: { username } }).then(resUser => {
+    return findOne('User', { username }).then(resUser => {
         return res.status(200).json(resUser)
     })
 }
@@ -49,18 +48,12 @@ function getUserByUsername(req, res) {
 function create(req, res, next) {
     const { username, password, type } = getOr({}, 'body')(req)
 
-    return User.findOne({
-        where: {
-            username,
-            password,
-        },
-    }).then(resUser => {
+    return findOne('User', { username, password }).then(resUser => {
         if (!resUser) {
             const token = jwt.sign({ username }, config.jwtSecret)
-            const user = User.build({ username, password, type, token })
+            const user = { username, password, type, token }
 
-            return user
-                .save()
+            return createOne('User', user)
                 .then(savedUser => res.status(200).json(savedUser))
                 .catch(e => next(e))
         }
@@ -92,8 +85,7 @@ function updateUserById(req, res, next) {
  * @returns {User[]}
  */
 function list(req, res, next) {
-    const { limit = 50 } = req.query
-    User.findAll({ limit })
+    return listAll('User')
         .then(users => res.json(users))
         .catch(e => next(e))
 }

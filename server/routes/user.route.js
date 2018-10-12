@@ -22,8 +22,8 @@ router
     /** GET /api/users/:userId - Get user */
     .get(userCtrl.getUserById)
 
-    /** PUT /api/users/:userId - Update user */
-    .put(validate(paramValidation.updateUser), userCtrl.updateUserById)
+    /** post /api/users/:userId - Update user */
+    .post(validate(paramValidation.updateUser), userCtrl.updateUserById)
 
     /** DELETE /api/users/:userId - Delete user */
     .delete(userCtrl.removeUserById)

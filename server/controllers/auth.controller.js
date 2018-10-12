@@ -6,7 +6,7 @@ import getOr from 'lodash/fp/getOr'
 // src
 import APIError from '../helpers/APIError'
 import config from '../../config/config'
-import { User } from '../../config/sequelize'
+import { findOne } from '../utils'
 
 /**
  * Returns jwt token if valid username and password is provided
@@ -19,12 +19,7 @@ function login(req, res, next) {
     // Ideally you'll fetch this from the db
     // Idea here was to show how jwt works with simplicity
     const { username, password } = getOr({}, 'body')(req)
-    User.findOne({
-        where: {
-            username,
-            password,
-        },
-    })
+    return findOne('User', { username, password })
         .then(resUser => {
             if (!resUser) {
                 return res.status(404).json({})
