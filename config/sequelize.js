@@ -42,7 +42,7 @@ const sequelize = new Sequelize(
     config.postgres.db,
     config.postgres.user,
     config.postgres.passwd,
-    sequelizeOptions
+    sequelizeOptions,
 )
 
 const modelsDir = path.normalize(`${__dirname}/../server/models`)
@@ -56,6 +56,7 @@ fs.readdirSync(modelsDir)
         const model = sequelize.import(path.join(modelsDir, file))
         db[model.name] = model
     })
+console.log('db', db)
 
 // Synchronizing any model changes with database.
 sequelize
@@ -72,7 +73,7 @@ sequelize
             if (!resUser) {
                 const token = jwt.sign({ username }, config.jwtSecret)
                 const admin = db.User.build({ username, password, type, token })
-                admin
+                return admin
                     .save()
                     .then(savedUser => {
                         console.log('Admin Created')
@@ -95,5 +96,5 @@ module.exports = _.extend(
         sequelize,
         Sequelize,
     },
-    db
+    db,
 )

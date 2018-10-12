@@ -49,7 +49,6 @@ function getUserByUsername(req, res) {
 function create(req, res, next) {
     const { username, password, type } = getOr({}, 'body')(req)
 
-    const token = jwt.sign({ username }, config.jwtSecret)
     return User.findOne({
         where: {
             username,
@@ -57,6 +56,7 @@ function create(req, res, next) {
         },
     }).then(resUser => {
         if (!resUser) {
+            const token = jwt.sign({ username }, config.jwtSecret)
             const user = User.build({ username, password, type, token })
 
             return user
