@@ -1,33 +1,33 @@
+import { tableConfig } from '../utils'
 /**
  * User Schema
  */
-module.exports = (sequelize, DataTypes) => {
-    const User = sequelize.define('User', {
-        username: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            unique: true,
+const User = (sequelize, DataTypes) => {
+    const User = sequelize.define(
+        'User',
+        {
+            id: {
+                type: DataTypes.INTEGER,
+                autoIncrement: true,
+                primaryKey: true,
+            },
+            username: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                unique: true,
+            },
+            password: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                unique: false,
+            },
+            type: { type: DataTypes.INTEGER, allowNull: false, unique: false },
+            token: { type: DataTypes.STRING, allowNull: false, unique: false },
         },
-        password: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            unique: false,
-        },
-        type: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            unique: false,
-        },
-        token: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            unique: false,
-        },
-        createdAt: {
-            type: DataTypes.DATE,
-            allowNull: false,
-        },
-    })
+        tableConfig,
+    )
 
     return User
 }
+
+export default User

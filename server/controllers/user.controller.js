@@ -1,32 +1,35 @@
-import httpStatus from 'http-status'
+// libs
 import jwt from 'jsonwebtoken'
-import db from '../../config/sequelize'
+import httpStatus from 'http-status'
+import getOr from 'lodash/fp/getOr'
 
-const User = db.User
-
-/**
- * Load user and append to req.
- */
-function load(req, res, next, id) {
-    User.findById(id)
-        .then(user => {
-            if (!user) {
-                const e = new Error('User does not exist')
-                e.status = httpStatus.NOT_FOUND
-                return next(e)
-            }
-            req.user = user // eslint-disable-line no-param-reassign
-            return next()
-        })
-        .catch(e => next(e))
-}
+// src
+import {
+    findOne,
+    listAll,
+    findById,
+    createOne,
+    update,
+    destroy,
+} from '../utils'
+import config from '../../config/config'
 
 /**
  * Get user
  * @returns {User}
  */
-function get(req, res) {
-    return res.json(req.user)
+function getUserById(req, res) {
+    const { id } = getOr({}, 'params')(req)
+    return findOne('User', { id }).then(resUser => {
+        return res.status(200).json(resUser)
+    })
+}
+
+function getUserByUsername(req, res) {
+    const { username } = getOr({}, 'query')(req)
+    return findOne('User', { username }).then(resUser => {
+        return res.status(200).json(resUser)
+    })
 }
 
 /**
@@ -36,37 +39,29 @@ function get(req, res) {
  * @returns {User}
  */
 function create(req, res, next) {
-    const { username, password, type } = req.body
+    const { username, password, type } = getOr({}, 'body')(req)
 
-    const token = jwt.sign(
-        { username, expiresIn: 100000000000 },
-        config.jwtSecret
-    )
-    const user = User.build({
-        username,
-        password,
-        type,
-        token,
+    return findOne('User', { username, password }).then(resUser => {
+        if (!resUser) {
+            const token = jwt.sign({ username }, config.jwtSecret)
+            const user = { username, password, type, token }
+
+            return createOne('User', user)
+                .then(savedUser => res.status(200).json(savedUser))
+                .catch(e => next(e))
+        }
+
+        return res.status(302).json({ message: 'User Already Exists' })
     })
-
-    user.save()
-        .then(savedUser => res.json(savedUser))
-        .catch(e => next(e))
 }
 
-/**
- * Update existing user
- * @property {string} req.body.username - The username of user.
- * @property {string} req.body.mobileNumber - The mobileNumber of user.
- * @returns {User}
- */
-function update(req, res, next) {
-    const user = req.user
-    user.username = req.body.username
-
-    user.save()
-        .then(savedUser => res.json(savedUser))
-        .catch(e => next(e))
+function updateUser(req, res, next) {
+    const newData = getOr({}, 'body')(req)
+    const { id } = getOr({}, 'params')(req)
+    console.log('new Data: ', id, newData)
+    return update('User', { id }, newData).then(user =>
+        res.status(200).json(user),
+    )
 }
 
 /**
@@ -76,8 +71,7 @@ function update(req, res, next) {
  * @returns {User[]}
  */
 function list(req, res, next) {
-    const { limit = 50 } = req.query
-    User.findAll({ limit })
+    return listAll('User')
         .then(users => res.json(users))
         .catch(e => next(e))
 }
@@ -86,12 +80,18 @@ function list(req, res, next) {
  * Delete user.
  * @returns {User}
  */
-function remove(req, res, next) {
-    const user = req.user
-    const username = req.user.username
-    user.destroy()
-        .then(() => res.json(username))
+function removeUserById(req, res, next) {
+    const { id } = getOr({}, 'params')(req)
+    destroy('User', { id })
+        .then(() => res.status(200).json('User Deleted'))
         .catch(e => next(e))
 }
 
-export default { load, get, create, update, list, remove }
+export default {
+    getUserById,
+    getUserByUsername,
+    create,
+    updateUser,
+    list,
+    removeUserById,
+}

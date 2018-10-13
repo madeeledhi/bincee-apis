@@ -13,6 +13,8 @@ import winstonInstance from './winston'
 import routes from '../server/routes/index.route'
 import config from './config'
 import APIError from '../server/helpers/APIError'
+import jwt from '../server/helpers/jwt'
+import errorHandler from '../server/helpers/errorHandler'
 
 const app = express()
 
@@ -46,7 +48,7 @@ if (config.env === 'development') {
                 'HTTP {{req.method}} {{req.url}} {{res.statusCode}} {{res.responseTime}}ms',
             colorStatus: true,
             // Color the status code (default green, 3XX cyan, 4XX yellow, 5XX red).
-        })
+        }),
     )
 }
 
@@ -54,24 +56,14 @@ if (config.env === 'development') {
 // const baseUrl = `/api/v${config.apiVersion}`;
 const baseUrl = '/api'
 
+// use JWT auth to secure the api
+app.use(jwt())
+
 // mount all routes on /api path
 app.use(`${baseUrl}`, routes)
 
-// if error is not an instanceOf APIError, convert it.
-app.use((err, req, res, next) => {
-    if (err instanceof expressValidation.ValidationError) {
-        // validation error contains errors which is an array of error each containing message[]
-        const unifiedErrorMessage = err.errors
-            .map(error => error.messages.join('. '))
-            .join(' and ')
-        const error = new APIError(unifiedErrorMessage, err.status, true)
-        return next(error)
-    } else if (!(err instanceof APIError)) {
-        const apiError = new APIError(err.message, err.status, err.isPublic)
-        return next(apiError)
-    }
-    return next(err)
-})
+// global error handler
+app.use(errorHandler)
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
@@ -84,21 +76,8 @@ if (config.env !== 'test') {
     app.use(
         expressWinston.errorLogger({
             winstonInstance,
-        })
+        }),
     )
 }
-
-// error handler, send stacktrace only during development
-app.use((
-    err,
-    req,
-    res,
-    next // eslint-disable-line no-unused-vars
-) =>
-    res.status(err.status).json({
-        message: err.isPublic ? err.message : httpStatus[err.status],
-        stack: config.env === 'development' ? err.stack : {},
-    })
-)
 
 export default app
