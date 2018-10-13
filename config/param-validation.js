@@ -10,13 +10,42 @@ export default {
         },
     },
 
-    // UPDATE /api/users/:userId
-    updateUser: {
+    // POST /api/admin
+    createSchool: {
         body: {
             username: Joi.string().required(),
+            password: Joi.string().required(),
+            name: Joi.string().required(),
+            address: Joi.string().required(),
+            phone_no: Joi.number().required(),
+        },
+    },
+
+    // POST /api/school
+    createDriver: {
+        body: {
+            username: Joi.string().required(),
+            password: Joi.string().required(),
+            fullname: Joi.string().required(),
+            bus_id: Joi.number().required(),
+            phone_no: Joi.number().required(),
+        },
+    },
+
+    // POST /api/school
+    createBus: {
+        body: {
+            registration_no: Joi.string().required(),
+            description: Joi.string().required(),
+        },
+    },
+
+    updateUser: {
+        body: {
+            password: Joi.string().required(),
         },
         params: {
-            userId: Joi.string()
+            id: Joi.string()
                 .hex()
                 .required(),
         },

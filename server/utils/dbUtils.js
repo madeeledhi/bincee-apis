@@ -1,4 +1,5 @@
 // libs
+import keys from 'lodash/fp/keys'
 
 // src
 import db from '../../config/sequelize'
@@ -12,6 +13,31 @@ import db from '../../config/sequelize'
 export function findOne(schema, searchParams) {
     const intent = db[schema]
     return intent.findOne({ where: searchParams })
+}
+
+export function destroy(schema, params) {
+    const intent = db[schema]
+    return intent.destroy({ where: params })
+}
+
+export function update(schema, params, data) {
+    const intent = db[schema]
+    return intent.update(data, { where: params })
+}
+
+export function findAcross(schema, params, secondarySchema) {
+    const intent = db[schema]
+    return intent.findAll({
+        references: [
+            {
+                model: secondarySchema,
+                through: {
+                    attributes: keys(params),
+                    where: params,
+                },
+            },
+        ],
+    })
 }
 
 /**

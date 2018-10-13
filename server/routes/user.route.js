@@ -17,13 +17,13 @@ router
     .post(validate(paramValidation.createUser), userCtrl.create)
 
 router
-    .route('/:userId')
+    .route('/:id')
 
     /** GET /api/users/:userId - Get user */
     .get(userCtrl.getUserById)
 
     /** post /api/users/:userId - Update user */
-    .post(validate(paramValidation.updateUser), userCtrl.updateUserById)
+    .post(userCtrl.updateUser)
 
     /** DELETE /api/users/:userId - Delete user */
     .delete(userCtrl.removeUserById)
@@ -33,8 +33,5 @@ router
 
     /** GET /api/users/:userId - Get user */
     .get(userCtrl.getUserByUsername)
-
-/** Load user when API with userId route parameter is hit */
-router.param('userId', userCtrl.load)
 
 export default router

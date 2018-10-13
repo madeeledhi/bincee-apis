@@ -16,14 +16,31 @@ const Student = (sequelize, DataTypes) => {
                 allowNull: false,
                 unique: false,
             },
+            parentname: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                unique: false,
+            },
             phone_no: {
                 type: DataTypes.STRING,
                 allowNull: false,
                 unique: false,
             },
+            grade: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                unique: true,
+                references: { model: 'Grade', key: 'grade_id' },
+            },
+            shift: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                unique: true,
+                references: { model: 'Shift', key: 'shift_id' },
+            },
             email: { type: DataTypes.STRING, allowNull: false, unique: false },
-            lat: { type: DataTypes.DOUBLE, allowNull: false, unique: false },
-            lng: { type: DataTypes.DOUBLE, allowNull: false, unique: false },
+            lat: { type: DataTypes.DOUBLE, allowNull: true, unique: false },
+            lng: { type: DataTypes.DOUBLE, allowNull: true, unique: false },
             driver: {
                 type: DataTypes.INTEGER,
                 allowNull: false,

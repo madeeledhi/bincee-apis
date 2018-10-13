@@ -12,7 +12,7 @@ const Bus = (sequelize, DataTypes) => {
                 primaryKey: true,
                 autoIncrement: true,
             },
-            registeration_no: {
+            registration_no: {
                 type: DataTypes.STRING,
                 allowNull: false,
                 unique: false,
