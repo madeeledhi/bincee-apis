@@ -49,7 +49,7 @@ function createBus(req, res, next) {
 }
 
 function createDriver(req, res, next) {
-    const { username, password, fullname, phone_no, bus_id } = getOr(
+    const { username, password, fullname, phone_no, bus_id, status } = getOr(
         {},
         'body',
     )(req)
@@ -58,7 +58,7 @@ function createDriver(req, res, next) {
         if (!resUser) {
             const token = jwt.sign({ username }, config.jwtSecret)
             const user = { username, password, type: 3, token }
-            const driver = { fullname, phone_no, bus_id }
+            const driver = { fullname, phone_no, bus_id, status }
             return createOne('User', user)
                 .then(savedUser => {
                     const { dataValues } = savedUser

@@ -1,11 +1,7 @@
 // libs
-import jwt from 'jsonwebtoken'
-import httpStatus from 'http-status'
 import getOr from 'lodash/fp/getOr'
 
 // src
-import APIError from '../helpers/APIError'
-import config from '../../config/config'
 import { findOne } from '../utils'
 
 /**
@@ -15,7 +11,7 @@ import { findOne } from '../utils'
  * @param next
  * @returns {*}
  */
-function login(req, res, next) {
+function login(req, res) {
     // Ideally you'll fetch this from the db
     // Idea here was to show how jwt works with simplicity
     const { username, password } = getOr({}, 'body')(req)

@@ -1,12 +1,12 @@
 import { tableConfig } from '../utils'
 /**
- * Driver Schema
+ * Student Schema
  */
-const Driver = (sequelize, DataTypes) => {
-    const Driver = sequelize.define(
-        'Driver',
+const Parent = (sequelize, DataTypes) => {
+    const Student = sequelize.define(
+        'Parent',
         {
-            driver_id: {
+            parent_id: {
                 type: DataTypes.INTEGER,
                 primaryKey: true,
                 references: { model: 'User', key: 'id' },
@@ -22,17 +22,14 @@ const Driver = (sequelize, DataTypes) => {
                 allowNull: false,
                 unique: false,
             },
-            bus_id: {
-                type: DataTypes.INTEGER,
-                allowNull: false,
-                unique: true,
-                references: { model: 'Bus', key: 'id' },
-            },
+            email: { type: DataTypes.STRING, allowNull: false, unique: false },
+            lat: { type: DataTypes.DOUBLE, allowNull: true, unique: false },
+            lng: { type: DataTypes.DOUBLE, allowNull: true, unique: false },
         },
         tableConfig,
     )
 
-    return Driver
+    return Parent
 }
 
-export default Driver
+export default Parent

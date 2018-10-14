@@ -87,9 +87,9 @@ function schoolList(req, res, next) {
 }
 
 export default {
+    getSchool,
     schoolList,
     createSchool,
     updateSchoolDetails,
     deleteSchool,
-    getSchool,
 }

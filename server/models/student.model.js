@@ -6,25 +6,22 @@ const Student = (sequelize, DataTypes) => {
     const Student = sequelize.define(
         'Student',
         {
-            student_id: {
+            id: {
                 type: DataTypes.INTEGER,
                 primaryKey: true,
-                references: { model: 'User', key: 'id' },
+                autoIncrement: true,
             },
             fullname: {
                 type: DataTypes.STRING,
                 allowNull: false,
                 unique: false,
             },
-            parentname: {
-                type: DataTypes.STRING,
+            status: { type: DataTypes.STRING, allowNull: false, unique: false },
+            parent_id: {
+                type: DataTypes.INTEGER,
                 allowNull: false,
-                unique: false,
-            },
-            phone_no: {
-                type: DataTypes.STRING,
-                allowNull: false,
-                unique: false,
+                unique: true,
+                references: { model: 'Parent', key: 'parent_id' },
             },
             grade: {
                 type: DataTypes.INTEGER,
@@ -38,9 +35,6 @@ const Student = (sequelize, DataTypes) => {
                 unique: true,
                 references: { model: 'Shift', key: 'shift_id' },
             },
-            email: { type: DataTypes.STRING, allowNull: false, unique: false },
-            lat: { type: DataTypes.DOUBLE, allowNull: true, unique: false },
-            lng: { type: DataTypes.DOUBLE, allowNull: true, unique: false },
             driver: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
