@@ -29,6 +29,7 @@ const Parent = (sequelize, DataTypes) => {
             email: { type: DataTypes.STRING, allowNull: false, unique: false },
             lat: { type: DataTypes.DOUBLE, allowNull: true, unique: false },
             lng: { type: DataTypes.DOUBLE, allowNull: true, unique: false },
+            status: { type: DataTypes.STRING, allowNull: false, unique: false },
             school_id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,

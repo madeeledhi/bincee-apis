@@ -46,6 +46,32 @@ export default {
     },
 
     // POST /api/school
+    createStudent: {
+        body: {
+            username: Joi.string().required(),
+            grade: Joi.string().required(),
+            shift: Joi.string().required(),
+            parent_id: Joi.number().required(),
+            driver_id: Joi.number().required(),
+            status: Joi.string().required(),
+        },
+    },
+
+    createGrade: {
+        body: {
+            grade_name: Joi.string().required(),
+            section: Joi.string().required(),
+        },
+    },
+    createShift: {
+        body: {
+            shift_name: Joi.string().required(),
+            start_time: Joi.string().required(),
+            end_time: Joi.string().required(),
+        },
+    },
+
+    // POST /api/school
     createBus: {
         body: {
             registration_no: Joi.string().required(),

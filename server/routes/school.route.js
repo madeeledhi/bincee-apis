@@ -12,13 +12,47 @@ router
     .route('/bus/create')
     .post(validate(paramValidation.createBus), schoolCtrl.createBus)
 router.route('/bus/list').get(schoolCtrl.busList)
-router.route('/driver/bus/list').get(schoolCtrl.busList)
+router.route('/driver/bus/list').get(schoolCtrl.driverBusList)
 
 router
     .route('/bus/:id')
     .get(schoolCtrl.getBus)
     .delete(schoolCtrl.deleteBus)
     .post(schoolCtrl.updateBus)
+
+router
+    .route('/grade/create')
+    .post(validate(paramValidation.createGrade), schoolCtrl.createGrade)
+router.route('/grade/list').get(schoolCtrl.gradeList)
+
+router
+    .route('/grade/:id')
+    .get(schoolCtrl.getGrade)
+    .delete(schoolCtrl.deleteGrade)
+    .post(schoolCtrl.updateGrade)
+
+router
+    .route('/shift/create')
+    .post(validate(paramValidation.createShift), schoolCtrl.createShift)
+router.route('/shift/list').get(schoolCtrl.shiftList)
+
+router
+    .route('/shift/:id')
+    .get(schoolCtrl.getShift)
+    .delete(schoolCtrl.deleteShift)
+    .post(schoolCtrl.updateShift)
+
+router
+    .route('/student/create')
+    .post(validate(paramValidation.createStudent), schoolCtrl.createStudent)
+router.route('/student/list').get(schoolCtrl.studentList)
+router.route('/parent/student/list').get(schoolCtrl.parentStudentList)
+
+router
+    .route('/student/:id')
+    .get(schoolCtrl.getStudent)
+    .delete(schoolCtrl.deleteStudent)
+    .post(schoolCtrl.updateStudent)
 
 router
     .route('/driver/create')
