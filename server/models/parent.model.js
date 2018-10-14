@@ -16,7 +16,6 @@ const Parent = (sequelize, DataTypes) => {
                 allowNull: false,
                 unique: false,
             },
-            status: { type: DataTypes.STRING, allowNull: false, unique: false },
             phone_no: {
                 type: DataTypes.STRING,
                 allowNull: false,

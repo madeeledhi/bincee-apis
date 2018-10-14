@@ -10,19 +10,11 @@ const Student = (sequelize, DataTypes) => {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
                 primaryKey: true,
-                autoIncrement: true,
             },
             fullname: {
                 type: DataTypes.STRING,
                 allowNull: false,
                 unique: false,
-            },
-            status: { type: DataTypes.STRING, allowNull: false, unique: false },
-            parent_id: {
-                type: DataTypes.INTEGER,
-                allowNull: false,
-                unique: false,
-                references: { model: 'Parent', key: 'parent_id' },
             },
             grade: {
                 type: DataTypes.INTEGER,
@@ -36,12 +28,19 @@ const Student = (sequelize, DataTypes) => {
                 unique: true,
                 references: { model: 'Shift', key: 'shift_id' },
             },
+            parent_id: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                unique: false,
+                references: { model: 'Parent', key: 'parent_id' },
+            },
             driver_id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 unique: false,
                 references: { model: 'Driver', key: 'driver_id' },
             },
+            status: { type: DataTypes.STRING, allowNull: false, unique: false },
         },
         tableConfig,
     )

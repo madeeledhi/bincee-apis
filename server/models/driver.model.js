@@ -16,7 +16,6 @@ const Driver = (sequelize, DataTypes) => {
                 allowNull: false,
                 unique: false,
             },
-            status: { type: DataTypes.STRING, allowNull: false, unique: false },
             phone_no: {
                 type: DataTypes.STRING,
                 allowNull: false,
@@ -28,6 +27,7 @@ const Driver = (sequelize, DataTypes) => {
                 unique: false,
                 references: { model: 'School', key: 'school_id' },
             },
+            status: { type: DataTypes.STRING, allowNull: false, unique: false },
         },
         tableConfig,
     )
