@@ -3,7 +3,7 @@ import { tableConfig } from '../utils'
  * Student Schema
  */
 const Parent = (sequelize, DataTypes) => {
-    const Student = sequelize.define(
+    const Parent = sequelize.define(
         'Parent',
         {
             parent_id: {
@@ -22,9 +22,20 @@ const Parent = (sequelize, DataTypes) => {
                 allowNull: false,
                 unique: false,
             },
+            address: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                unique: false,
+            },
             email: { type: DataTypes.STRING, allowNull: false, unique: false },
             lat: { type: DataTypes.DOUBLE, allowNull: true, unique: false },
             lng: { type: DataTypes.DOUBLE, allowNull: true, unique: false },
+            school_id: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                unique: false,
+                references: { model: 'School', key: 'school_id' },
+            },
         },
         tableConfig,
     )

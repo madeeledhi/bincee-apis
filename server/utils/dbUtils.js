@@ -12,6 +12,7 @@ import db from '../../config/sequelize'
  */
 export function findOne(schema, searchParams) {
     const intent = db[schema]
+    console.log('intent: ', intent, db)
     return intent.findOne({ where: searchParams })
 }
 

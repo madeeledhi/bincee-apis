@@ -12,6 +12,7 @@ router
     .route('/bus/create')
     .post(validate(paramValidation.createBus), schoolCtrl.createBus)
 router.route('/bus/list').get(schoolCtrl.busList)
+router.route('/driver/bus/list').get(schoolCtrl.busList)
 
 router
     .route('/bus/:id')
@@ -29,5 +30,16 @@ router
     .get(schoolCtrl.getDriver)
     .delete(schoolCtrl.deleteDriver)
     .post(schoolCtrl.updateDriver)
+
+router
+    .route('/parent/create')
+    .post(validate(paramValidation.createParent), schoolCtrl.createParent)
+router.route('/parent/list').get(schoolCtrl.parentList)
+
+router
+    .route('/parent/:id')
+    .get(schoolCtrl.getParent)
+    .delete(schoolCtrl.deleteParent)
+    .post(schoolCtrl.updateParent)
 
 export default router

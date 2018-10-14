@@ -20,7 +20,7 @@ const Student = (sequelize, DataTypes) => {
             parent_id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
-                unique: true,
+                unique: false,
                 references: { model: 'Parent', key: 'parent_id' },
             },
             grade: {
@@ -35,10 +35,10 @@ const Student = (sequelize, DataTypes) => {
                 unique: true,
                 references: { model: 'Shift', key: 'shift_id' },
             },
-            driver: {
+            driver_id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
-                unique: true,
+                unique: false,
                 references: { model: 'Driver', key: 'driver_id' },
             },
         },

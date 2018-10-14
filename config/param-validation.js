@@ -17,7 +17,7 @@ export default {
             password: Joi.string().required(),
             name: Joi.string().required(),
             address: Joi.string().required(),
-            phone_no: Joi.number().required(),
+            phone_no: Joi.string().required(),
         },
     },
 
@@ -27,8 +27,21 @@ export default {
             username: Joi.string().required(),
             password: Joi.string().required(),
             fullname: Joi.string().required(),
-            bus_id: Joi.number().required(),
-            phone_no: Joi.number().required(),
+            status: Joi.string().required(),
+            phone_no: Joi.string().required(),
+        },
+    },
+
+    // POST /api/school
+    createParent: {
+        body: {
+            username: Joi.string().required(),
+            password: Joi.string().required(),
+            fullname: Joi.string().required(),
+            email: Joi.string().required(),
+            status: Joi.string().required(),
+            address: Joi.string().required(),
+            phone_no: Joi.string().required(),
         },
     },
 
@@ -37,6 +50,7 @@ export default {
         body: {
             registration_no: Joi.string().required(),
             description: Joi.string().required(),
+            driver_id: Joi.number().required(),
         },
     },
 

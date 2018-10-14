@@ -62,7 +62,7 @@ function deleteSchool(req, res, next) {
     const { id } = getOr({}, 'params')(req)
     return destroy('School', { school_id: id }).then(() => {
         return destroy('User', { id }).then(() =>
-            res.status(200).json('School Deleted'),
+            res.status(200).json({ message: 'School Deleted' }),
         )
     })
 }

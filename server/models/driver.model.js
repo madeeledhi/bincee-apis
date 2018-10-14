@@ -22,11 +22,11 @@ const Driver = (sequelize, DataTypes) => {
                 allowNull: false,
                 unique: false,
             },
-            bus_id: {
+            school_id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
-                unique: true,
-                references: { model: 'Bus', key: 'id' },
+                unique: false,
+                references: { model: 'School', key: 'school_id' },
             },
         },
         tableConfig,

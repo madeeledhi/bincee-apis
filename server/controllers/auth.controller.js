@@ -18,7 +18,9 @@ function login(req, res) {
     return findOne('User', { username, password })
         .then(resUser => {
             if (!resUser) {
-                return res.status(404).json({})
+                return res
+                    .status(404)
+                    .json({ message: 'Invalid Username/Password' })
             }
             return res.status(200).json(resUser)
         })
