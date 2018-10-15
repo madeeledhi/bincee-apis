@@ -29,6 +29,7 @@ export default {
             fullname: Joi.string().required(),
             status: Joi.string().required(),
             phone_no: Joi.string().required(),
+            photo: Joi.string().required(),
         },
     },
 
@@ -42,6 +43,7 @@ export default {
             status: Joi.string().required(),
             address: Joi.string().required(),
             phone_no: Joi.string().required(),
+            photo: Joi.string().required(),
         },
     },
 
@@ -54,6 +56,7 @@ export default {
             parent_id: Joi.number().required(),
             driver_id: Joi.number().required(),
             status: Joi.string().required(),
+            photo: Joi.string().required(),
         },
     },
 

@@ -36,10 +36,15 @@ function createBus(req, res, next) {
     })
 }
 function createStudent(req, res, next) {
-    const { username, grade, shift, parent_id, driver_id, status } = getOr(
-        {},
-        'body',
-    )(req)
+    const {
+        username,
+        grade,
+        shift,
+        parent_id,
+        driver_id,
+        status,
+        photo,
+    } = getOr({}, 'body')(req)
     return findOne('Student', { username, parent_id }).then(resStu => {
         if (!resStu) {
             return createOne('Student', {
@@ -49,6 +54,7 @@ function createStudent(req, res, next) {
                 parent_id,
                 driver_id,
                 status,
+                photo,
             }).then(student => {
                 return res.status(200).json(student)
             })
@@ -58,7 +64,7 @@ function createStudent(req, res, next) {
     })
 }
 function createDriver(req, res, next) {
-    const { username, password, fullname, phone_no, status } = getOr(
+    const { username, password, fullname, phone_no, status, photo } = getOr(
         {},
         'body',
     )(req)
@@ -86,6 +92,7 @@ function createDriver(req, res, next) {
                         bus_id,
                         status,
                         school_id: id,
+                        photo,
                     }
                     return createOne('User', user)
                         .then(savedUser => {
@@ -130,6 +137,7 @@ function createParent(req, res, next) {
         lat,
         lng,
         status,
+        photo,
     } = getOr({}, 'body')(req)
     const { authorization } = getOr({}, 'headers')(req)
     const token = flow(
@@ -158,6 +166,7 @@ function createParent(req, res, next) {
                         lng,
                         status,
                         school_id: id,
+                        photo,
                     }
                     return createOne('User', user)
                         .then(savedUser => {

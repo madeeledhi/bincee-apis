@@ -22,6 +22,7 @@ const Student = (sequelize, DataTypes) => {
                 unique: true,
                 references: { model: 'Grade', key: 'grade_id' },
             },
+            photo: { type: DataTypes.STRING, allowNull: false, unique: false },
             shift: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
