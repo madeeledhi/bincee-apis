@@ -15,6 +15,7 @@ router.route('/list').get(userCtrl.list)
 router
     .route('/create')
     .post(validate(paramValidation.createUser), userCtrl.create)
+router.route('/list').get(userCtrl.list)
 
 router
     .route('/:id')

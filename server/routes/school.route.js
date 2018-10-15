@@ -12,7 +12,7 @@ router
     .route('/bus/create')
     .post(validate(paramValidation.createBus), schoolCtrl.createBus)
 router.route('/bus/list').get(schoolCtrl.busList)
-router.route('/driver/bus/list').get(schoolCtrl.driverBusList)
+router.route('/driver/bus/:id').get(schoolCtrl.driverBusList)
 
 router
     .route('/bus/:id')
@@ -46,7 +46,7 @@ router
     .route('/student/create')
     .post(validate(paramValidation.createStudent), schoolCtrl.createStudent)
 router.route('/student/list').get(schoolCtrl.studentList)
-router.route('/parent/student/list').get(schoolCtrl.parentStudentList)
+router.route('/parent/student/:id').get(schoolCtrl.parentStudentList)
 
 router
     .route('/student/:id')

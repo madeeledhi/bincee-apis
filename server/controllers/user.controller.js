@@ -2,6 +2,8 @@
 import jwt from 'jsonwebtoken'
 import httpStatus from 'http-status'
 import getOr from 'lodash/fp/getOr'
+import flow from 'lodash/fp/flow'
+import split from 'lodash/fp/split'
 
 // src
 import {
@@ -21,14 +23,20 @@ import config from '../../config/config'
 function getUserById(req, res) {
     const { id } = getOr({}, 'params')(req)
     return findOne('User', { id }).then(resUser => {
-        return res.status(200).json(resUser)
+        if (resUser) {
+            return res.status(200).json(resUser)
+        }
+        res.status(404).json({ message: 'User Not Found' })
     })
 }
 
 function getUserByUsername(req, res) {
     const { username } = getOr({}, 'query')(req)
     return findOne('User', { username }).then(resUser => {
-        return res.status(200).json(resUser)
+        if (resUser) {
+            return res.status(200).json(resUser)
+        }
+        return res.status(404).json({ message: 'User Not Found' })
     })
 }
 
@@ -56,12 +64,13 @@ function create(req, res, next) {
 }
 
 function updateUser(req, res, next) {
-    const newData = getOr({}, 'body')(req)
+    const { username, password } = getOr({}, 'body')(req)
     const { id } = getOr({}, 'params')(req)
-    console.log('new Data: ', id, newData)
-    return update('User', { id }, newData).then(user =>
-        res.status(200).json(user),
-    )
+    return update(
+        'User',
+        { id },
+        username && password ? { username, password } : {},
+    ).then(user => res.status(200).json(user))
 }
 
 /**
@@ -71,9 +80,23 @@ function updateUser(req, res, next) {
  * @returns {User[]}
  */
 function list(req, res, next) {
-    return listAll('User')
-        .then(users => res.json(users))
-        .catch(e => next(e))
+    const { authorization } = getOr({}, 'headers')(req)
+    const token = flow(
+        split(' '),
+        splitted => splitted[1],
+    )(authorization)
+    return findOne('User', { token }).then(resUser => {
+        if (resUser) {
+            const { type } = getOr(0, 'dataValues')(resUser)
+            if (type === 1) {
+                return listAll('User')
+                    .then(users => res.json(users))
+                    .catch(e => next(e))
+            }
+            return res.status(401).send({ message: 'Unauthorized Access' })
+        }
+        return res.status(404).send({ message: 'No User Found' })
+    })
 }
 
 /**

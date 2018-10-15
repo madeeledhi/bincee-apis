@@ -23,7 +23,7 @@ const Driver = (sequelize, DataTypes) => {
             },
             photo: {
                 type: DataTypes.STRING,
-                allowNull: false,
+                allowNull: true,
                 unique: false,
             },
             school_id: {
