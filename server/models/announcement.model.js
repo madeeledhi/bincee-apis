@@ -22,10 +22,12 @@ const Announcement = (sequelize, DataTypes) => {
                 allowNull: true,
                 unique: false,
             },
-            type: {
-                type: DataTypes.STRING,
-                allowNull: true,
+            type: { type: DataTypes.STRING, allowNull: true, unique: false },
+            school_id: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
                 unique: false,
+                references: { model: 'School', key: 'school_id' },
             },
         },
         tableConfig,
