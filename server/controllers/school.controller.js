@@ -37,7 +37,7 @@ function createBus(req, res, next) {
 }
 function createStudent(req, res, next) {
     const {
-        username,
+        fullname,
         grade,
         shift,
         parent_id,
@@ -45,10 +45,10 @@ function createStudent(req, res, next) {
         status,
         photo,
     } = getOr({}, 'body')(req)
-    return findOne('Student', { username, parent_id }).then(resStu => {
+    return findOne('Student', { fullname, parent_id }).then(resStu => {
         if (!resStu) {
             return createOne('Student', {
-                username,
+                fullname,
                 grade,
                 shift,
                 parent_id,
@@ -89,7 +89,6 @@ function createDriver(req, res, next) {
                     const driver = {
                         fullname,
                         phone_no,
-                        bus_id,
                         status,
                         school_id: id,
                         photo,
@@ -246,14 +245,15 @@ function createShift(req, res, next) {
             return findOne('Shift', {
                 shift_name,
                 start_time,
-                grade_name,
+                end_time,
                 school_id: id,
             }).then(resShift => {
                 if (!resShift) {
                     return createOne('Shift', {
                         shift_name,
                         start_time,
-                        grade_name,
+                        end_time,
+                        school_id,
                     }).then(shift => {
                         return res.status(200).json(shift)
                     })
@@ -275,15 +275,15 @@ function deleteBus(req, res, next) {
 }
 function deleteShift(req, res, next) {
     const { id } = getOr({}, 'params')(req)
-    return destroy('Shift', { id }).then(() =>
+    return destroy('Shift', { shift_id: id }).then(() =>
         res.status(200).json({ message: 'Shift Deleted' }),
     )
 }
 function deleteGrade(req, res, next) {
     const { id } = getOr({}, 'params')(req)
-    return destroy('Grade', { id }).then(() =>
-        res.status(200).json({ message: 'Grade Deleted' }),
-    )
+    return destroy('Grade', {
+        grade_id: id,
+    }).then(() => res.status(200).json({ message: 'Grade Deleted' }))
 }
 function deleteStudent(req, res, next) {
     const { id } = getOr({}, 'params')(req)
@@ -319,14 +319,14 @@ function updateBus(req, res, next) {
 function updateGrade(req, res, next) {
     const newData = getOr({}, 'body')(req)
     const { id } = getOr({}, 'params')(req)
-    return update('Grade', { id }, newData).then(grade =>
+    return update('Grade', { grade_id: id }, newData).then(grade =>
         res.status(200).json(grade),
     )
 }
 function updateShift(req, res, next) {
     const newData = getOr({}, 'body')(req)
     const { id } = getOr({}, 'params')(req)
-    return update('Shift', { id }, newData).then(shift =>
+    return update('Shift', { shift_id: id }, newData).then(shift =>
         res.status(200).json(shift),
     )
 }
@@ -359,11 +359,15 @@ function getBus(req, res, next) {
 }
 function getShift(req, res, next) {
     const { id } = getOr({}, 'params')(req)
-    return findOne('Shift', { id }).then(shift => res.status(200).json(shift))
+    return findOne('Shift', { shift_id: id }).then(shift =>
+        res.status(200).json(shift),
+    )
 }
 function getGrade(req, res, next) {
     const { id } = getOr({}, 'params')(req)
-    return findOne('Grade', { id }).then(grade => res.status(200).json(grade))
+    return findOne('Grade', {
+        grade_id: id,
+    }).then(grade => res.status(200).json(grade))
 }
 function getStudent(req, res, next) {
     const { id } = getOr({}, 'params')(req)

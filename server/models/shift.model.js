@@ -20,7 +20,7 @@ const Shift = (sequelize, DataTypes) => {
             end_time: { type: DataTypes.TIME, allowNull: false },
             school_id: {
                 type: DataTypes.INTEGER,
-                allowNull: true,
+                allowNull: false,
                 unique: false,
                 references: { model: 'School', key: 'school_id' },
             },

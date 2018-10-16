@@ -48,7 +48,7 @@ export default {
     // POST /api/school
     createStudent: {
         body: {
-            username: Joi.string().required(),
+            fullname: Joi.string().required(),
             grade: Joi.string().required(),
             shift: Joi.string().required(),
             parent_id: Joi.number().required(),

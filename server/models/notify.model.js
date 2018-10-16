@@ -8,15 +8,15 @@ const Notify = (sequelize, DataTypes) => {
         {
             student_id: {
                 type: DataTypes.INTEGER,
-                allowNull: true,
-                unique: true,
+                allowNull: false,
+                unique: false,
                 references: { model: 'Student', key: 'id' },
                 primaryKey: true,
             },
             anouncement_id: {
                 type: DataTypes.INTEGER,
-                allowNull: true,
-                unique: true,
+                allowNull: false,
+                unique: false,
                 references: { model: 'Announcement', key: 'id' },
                 primaryKey: true,
             },

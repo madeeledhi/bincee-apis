@@ -15,7 +15,7 @@ const Bus = (sequelize, DataTypes) => {
             registration_no: {
                 type: DataTypes.STRING,
                 allowNull: false,
-                unique: false,
+                unique: true,
             },
             description: {
                 type: DataTypes.STRING,

@@ -29,7 +29,7 @@ const Grade = (sequelize, DataTypes) => {
             },
             school_id: {
                 type: DataTypes.INTEGER,
-                allowNull: true,
+                allowNull: false,
                 unique: false,
                 references: { model: 'School', key: 'school_id' },
             },

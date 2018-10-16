@@ -21,7 +21,7 @@ function login(req, res) {
                 .status(404)
                 .json({ message: 'Invalid Username/Password' })
         }
-        const { dataValues } = res
+        const { dataValues } = resUser
         const { id, username, type, token } = dataValues
         return res.status(200).json({ id, username, type, token })
     })
