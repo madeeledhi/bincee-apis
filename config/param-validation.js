@@ -20,6 +20,21 @@ export default {
             phone_no: Joi.string().required(),
         },
     },
+    createLeave: {
+        body: {from_date, to_date, student_id
+            from_date: Joi.string().required(),
+            to_date: Joi.string().required(),
+            student_id: Joi.number().required(),
+        },
+    },
+    createNotification: {
+        body: {
+            studentArray: Joi.array().required(),
+            last_updated: Joi.string().required(),
+            description: Joi.string().required(),
+            type: Joi.string().required(),
+        },
+    },
 
     // POST /api/school
     createDriver: {

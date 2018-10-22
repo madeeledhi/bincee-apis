@@ -1,5 +1,6 @@
 // libs
 import keys from 'lodash/fp/keys'
+import map from 'lodash/fp/map'
 
 // src
 import db from '../../config/sequelize'
@@ -50,6 +51,16 @@ export function findAcross(schema, params, secondarySchema) {
 export function createOne(schema, buildParams) {
     const intent = db[schema]
     return intent.build(buildParams).save()
+}
+/**
+ * Add New Tuple
+ * @property {schema: String} Model Name
+ * @property {buildParams: Array} build parameters
+ * @returns Tuple: Object
+ */
+export function createMutiple(schema, buildParams) {
+    const intent = db[schema]
+    return map(params => intent.build(params).save())(buildParams)
 }
 
 /**
