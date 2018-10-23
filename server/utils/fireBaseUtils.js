@@ -18,3 +18,52 @@ function intializeFirebase() {
         databaseURL: process.env.DATABASE_URL,
     })
 }
+
+function create(path, child, data) {
+    const db = admin.database()
+    const ref = db
+        .ref(path)
+        .child(child)
+        .set(data, function(error) {
+            if (error) {
+                console.log('Data could not be saved.' + error)
+            } else {
+                console.log('Data saved successfully.')
+            }
+        })
+}
+function update(path, child, data) {
+    const db = admin.database()
+    const ref = db
+        .ref(path)
+        .child(child)
+        .update(data, function(error) {
+            if (error) {
+                console.log('Data could not be updated.' + error)
+            } else {
+                console.log('Data updated successfully.')
+            }
+        })
+}
+function get(path, child) {
+    const db = admin.database()
+    const ref = db
+        .ref(path)
+        .child(child)
+        .once('value', function(data) {
+            return data
+        })
+}
+function getAsync(path, child, event) {
+    const db = admin.database()
+    const ref = db.ref(path).child(child)
+    on(
+        event,
+        function(snapshot) {
+            return snapshot.val()
+        },
+        function(errorObject) {
+            console.log('The read failed: ' + errorObject.code)
+        },
+    )
+}
