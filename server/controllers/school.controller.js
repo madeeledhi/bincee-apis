@@ -555,7 +555,7 @@ function parentList(req, res, next) {
 export default {
     createBus,
     createNotification,
-    createLeave
+    createLeave,
     createGrade,
     createShift,
     createStudent,

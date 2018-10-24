@@ -1,7 +1,6 @@
 import * as admin from 'firebase-admin'
 
-function intializeFirebase() {
-    const serviceAccount = require('../../config/firebaseConfig/bincee-67ec6-firebase-adminsdk-k1zs9-3b3e1e9c89.json')
+export function intializeFirebase() {
     admin.initializeApp({
         credential: admin.credential.cert({
             type: 'service_account',
@@ -19,51 +18,58 @@ function intializeFirebase() {
     })
 }
 
-function create(path, child, data) {
+export function create(path, child, data) {
     const db = admin.database()
-    const ref = db
+    return db
         .ref(path)
         .child(child)
-        .set(data, function(error) {
+        .set(data, error => {
             if (error) {
                 console.log('Data could not be saved.' + error)
+                return false
             } else {
                 console.log('Data saved successfully.')
+                return true
             }
         })
 }
-function update(path, child, data) {
+
+export function update(path, child, data) {
     const db = admin.database()
-    const ref = db
+    return db
         .ref(path)
         .child(child)
-        .update(data, function(error) {
+        .update(data, error => {
             if (error) {
                 console.log('Data could not be updated.' + error)
+                return error
             } else {
                 console.log('Data updated successfully.')
+                return data
             }
         })
 }
-function get(path, child) {
+
+export function get(path, child) {
     const db = admin.database()
-    const ref = db
+    return db
         .ref(path)
         .child(child)
-        .once('value', function(data) {
+        .once('value', data => {
             return data
         })
 }
-function getAsync(path, child, event) {
+
+export function getAsync(path, child, event) {
     const db = admin.database()
-    const ref = db.ref(path).child(child)
-    on(
+    return db.ref(path).child(child).on(
         event,
-        function(snapshot) {
+        snapshot => {
             return snapshot.val()
         },
-        function(errorObject) {
+        errorObject => {
             console.log('The read failed: ' + errorObject.code)
+            return errorObject
         },
     )
 }
