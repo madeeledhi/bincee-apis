@@ -21,7 +21,7 @@ export default {
         },
     },
     createLeave: {
-        body: {from_date, to_date, student_id
+        body: {
             from_date: Joi.string().required(),
             to_date: Joi.string().required(),
             student_id: Joi.number().required(),

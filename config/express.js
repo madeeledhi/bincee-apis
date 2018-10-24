@@ -62,14 +62,14 @@ app.use(jwt())
 // mount all routes on /api path
 app.use(`${baseUrl}`, routes)
 
-// global error handler
-app.use(errorHandler)
-
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
     const err = new APIError('API not found', httpStatus.NOT_FOUND)
     return next(err)
 })
+
+// global error handler
+app.use(errorHandler)
 
 // log error in winston transports except when executing test suite
 if (config.env !== 'test') {
