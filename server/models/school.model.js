@@ -2,7 +2,6 @@ import { tableConfig } from '../utils'
 /**
  * School Admin Schema
  */
-console.log('table config', tableConfig)
 const School = (sequelize, DataTypes) => {
     const School = sequelize.define(
         'School',

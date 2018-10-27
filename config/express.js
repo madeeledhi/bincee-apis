@@ -15,12 +15,15 @@ import config from './config'
 import APIError from '../server/helpers/APIError'
 import jwt from '../server/helpers/jwt'
 import errorHandler from '../server/helpers/errorHandler'
+import { intializeFirebase } from '../server/utils'
 
 const app = express()
 
 if (config.env === 'development') {
     app.use(logger('dev'))
 }
+
+intializeFirebase()
 
 // parse body params and attache them to req.body
 app.use(bodyParser.json())

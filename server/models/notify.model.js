@@ -13,7 +13,7 @@ const Notify = (sequelize, DataTypes) => {
                 references: { model: 'Student', key: 'id' },
                 primaryKey: true,
             },
-            anouncement_id: {
+            announcement_id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 unique: false,
