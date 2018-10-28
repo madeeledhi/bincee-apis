@@ -1,10 +1,12 @@
 import * as admin from 'firebase-admin'
 
+console.log('Private key: ', process.env.PRIVATE_KEY)
 const fireBaseAdmin = admin.initializeApp({
     credential: admin.credential.cert({
         type: 'service_account',
         project_id: process.env.PROJECT_ID,
         private_key_id: process.env.PRIVATE_KEY_ID,
+        // TODO: Enclose your private key with double quotes ("") in env file otherwise parsing error will occur
         private_key: process.env.PRIVATE_KEY,
         client_email: process.env.CLIENT_EMAIL,
         client_id: process.env.CLIENT_ID,
@@ -41,21 +43,22 @@ export function create(path, child, data) {
         })
 }
 
-export function update(path, child, data) {
-    const db = fireBaseAdmin.database()
-    return db
-        .ref(path)
-        .child(child)
-        .update(data, error => {
-            if (error) {
-                console.log('Data could not be updated.' + error)
-                return error
-            } else {
-                console.log('Data updated successfully.')
-                return data
-            }
-        })
-}
+// TODO: Error at update
+// export function update(path, child, data) {
+//     const db = fireBaseAdmin.database()
+//     return db
+//         .ref(path)
+//         .child(child)
+//         .update(data, error => {
+//             if (error) {
+//                 console.log('Data could not be updated.' + error)
+//                 return error
+//             } else {
+//                 console.log('Data updated successfully.')
+//                 return data
+//             }
+//         })
+// }
 
 export function get(path, child) {
     const db = fireBaseAdmin.database()

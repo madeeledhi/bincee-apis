@@ -47,7 +47,7 @@ function arrivedAtLocation(req, res) {
     const { ride_id, student_id, parent_id } = getOr({}, 'body')(req)
     return res.status(200).json({
         id: ride_id,
-        student_status="ready to pick / ready to drop"
+        student_status: 'ready to pick / ready to drop',
         message: 'Arrived',
     })
 }
