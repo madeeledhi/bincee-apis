@@ -67,6 +67,7 @@ export function get(path, child) {
         })
 }
 
+// TODO: Attach all listeners to app for realtime database events
 export function getAsync(path, child, event, responseCallback, errorCallback) {
     const db = fireBaseAdmin.database()
     return db
