@@ -44,21 +44,34 @@ export function create(path, child, data) {
 }
 
 // TODO: Error at update
-// export function update(path, child, data) {
-//     const db = fireBaseAdmin.database()
-//     return db
-//         .ref(path)
-//         .child(child)
-//         .update(data, error => {
-//             if (error) {
-//                 console.log('Data could not be updated.' + error)
-//                 return error
-//             } else {
-//                 console.log('Data updated successfully.')
-//                 return data
-//             }
-//         })
-// }
+export function updateData(path, child, data) {
+    const db = fireBaseAdmin.database()
+    return db
+        .ref(path)
+        .child(child)
+        .update(data, error => {
+            if (error) {
+                console.log('Data could not be updated.' + error)
+                return error
+            } else {
+                console.log('Data updated successfully.')
+                return data
+            }
+        })
+}
+
+export function updateMutipleChilds(pathArray) {
+    const db = fireBaseAdmin.database()
+    return db.ref().update({ pathArray }, error => {
+        if (error) {
+            console.log('Data could not be updated.' + error)
+            return error
+        } else {
+            console.log('Data updated successfully.')
+            return data
+        }
+    })
+}
 
 export function get(path, child) {
     const db = fireBaseAdmin.database()
