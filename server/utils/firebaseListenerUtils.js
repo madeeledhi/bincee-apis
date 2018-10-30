@@ -1,7 +1,7 @@
 // libs
 
 // src
-import { getAsync } from './firebaseUtils'
+import { attachFBListener } from './firebaseUtils'
 
 export const firebaseResponseHandler = snapshot => {
     console.log('snapShot: ', snapshot.val())
@@ -15,7 +15,7 @@ export const firebaseErrorHandler = errorObject => {
 
 // TODO: Register Listeners in this function to handle changes in Firebase DB
 export function registerListeners() {
-    getAsync(
+    attachFBListener(
         '/test',
         '/',
         'value',

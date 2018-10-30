@@ -2,7 +2,7 @@
 import getOr from 'lodash/fp/getOr'
 
 // src
-import { create } from '../utils'
+import { updateFBData } from '../utils'
 
 function createRide(req, res) {
     // TODO: Insert Logic for Creating a ride
@@ -37,7 +37,7 @@ function updateDriverLocation(req, res) {
 function endRide(req, res) {
     // TODO: Insert Logic for ending a ride
     const { ride_id } = getOr({}, 'body')(req)
-    create('/test', '/', { id: 'test id', value: ride_id })
+    updateFBData('/test', '/', { id: 'test id', value: ride_id })
     return res.status(200).json({
         id: ride_id,
         status: 'EndRide',
