@@ -1,9 +1,14 @@
 //src
 import join from 'lodash/join'
+import size from 'lodash/size'
+import map from 'lodash/fp/map'
+const distanceBaseUrl =
+    'https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial'
 
-function getDistanceMatrix(origins, destination) {
-    const filters = generateRequestParamsFromFilters(origins, destination)
-    const baseUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&${filters}&key=${
+function getDistanceMatrix(origins, destinations) {
+    const originQuery = generateRequestParamsFromFilters(origins)
+    const destinationQuery = generateRequestParamsFromFilters(destinations)
+    const distanceMatrixUrl = `${baseUrl}&origins=${originQuery}&destinations=${destinationQuery}&key=${
         process.env.ETA_API_KEY
     }`
 
@@ -12,8 +17,12 @@ function getDistanceMatrix(origins, destination) {
     })
 }
 
-function generateRequestParamsFromFilters(originsArray, destinationsArray) {
-    const origin = `${encodeURIComponent(join(originsArray, '|'))}`
-    const destination = `${encodeURIComponent(join(destinationsArray, '|'))}`
-    return `${origin}& ${destination}`
+function generateRequestParamsFromFilters(locations) {
+    if (size(locations) == 1) {
+        const { lat, lng } = location[0]
+        return encodeURIComponent(`${lat}, ${lng}`)
+    }
+    const locationArray = map(loc => `${loc.lat}, ${loc.lng}`)(locations)
+
+    return `${encodeURIComponent(join(locationArray, '|'))}`
 }
