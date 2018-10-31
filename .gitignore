@@ -57,3 +57,4 @@ node_modules
 build/nodejs
 build/yarn
 yarn.lock
+package-lock.json
