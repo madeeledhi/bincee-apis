@@ -56,5 +56,4 @@ node_modules
 .gradle
 build/nodejs
 build/yarn
-yarn.lock
 package-lock.json
