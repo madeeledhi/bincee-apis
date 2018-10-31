@@ -1,7 +1,7 @@
 // libs
 
 // src
-import { attachFBListener } from './firebaseUtils'
+import { attachFBListener } from './'
 
 export const firebaseResponseHandler = snapshot => {
     console.log('snapShot: ', snapshot.val())
