@@ -13,7 +13,7 @@ export const firebaseErrorHandler = errorObject => {
     return errorObject
 }
 
-// TODO: Register Listeners in this function to handle changes in Firebase DB
+// TODO:  Register Listeners in this function to handle changes in Firebase DB
 export function registerListeners() {
     attachFBListener(
         '/ride',
