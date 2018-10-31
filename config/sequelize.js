@@ -59,7 +59,7 @@ fs.readdirSync(modelsDir)
 
 // Synchronizing any model changes with database.
 sequelize
-    .sync()
+    .sync({ force: true })
     .then(() => {
         const { username, password, type } = user
         console.log('Database synchronized') // eslint-disable-line no-console
