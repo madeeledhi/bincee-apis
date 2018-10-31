@@ -20,7 +20,8 @@ const fireBaseAdmin =
                       'https://www.googleapis.com/oauth2/v1/certs',
                   client_x509_cert_url: process.env.CLIENT_CERT_URL,
               }),
-              databaseURL: process.env.DATABASE_URL,
+              databaseURL:
+                  process.env.DATABASE_URL || process.env.FIREBASE_DB_URL,
           })
         : apps[0]
 

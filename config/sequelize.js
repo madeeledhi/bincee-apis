@@ -58,6 +58,9 @@ fs.readdirSync(modelsDir)
     })
 
 // Synchronizing any model changes with database.
+
+// TODO: Replace sync with migrations
+// TODO: Create a mechanism for DB migrations using sequalize
 sequelize
     .sync({ force: true })
     .then(() => {
