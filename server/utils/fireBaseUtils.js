@@ -17,10 +17,10 @@ const fireBaseAdmin =
                   token_uri: 'https://oauth2.googleapis.com/token',
                   auth_provider_x509_cert_url:
                       'https://www.googleapis.com/oauth2/v1/certs',
-                  client_x509_cert_url: process.env.CLIENT_CERT_URL,
+                  client_x509_cert_url:
+                      'https=//www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-k1zs9%40bincee-67ec6.iam.gserviceaccount.com',
               }),
-              databaseURL:
-                  process.env.DATABASE_URL || process.env.FIREBASE_DB_URL,
+              databaseURL: 'https://bincee-67ec6.firebaseio.com',
           })
         : apps[0]
 
