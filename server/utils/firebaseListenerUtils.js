@@ -2,10 +2,12 @@
 
 // src
 import { attachFBListener } from './'
+import { get } from 'https'
 
 export const firebaseResponseHandler = snapshot => {
     console.log('snapShot: ', snapshot.val())
     return snapshot.val()
+    // TODO: Logic for route creation
 }
 
 export const firebaseErrorHandler = errorObject => {
