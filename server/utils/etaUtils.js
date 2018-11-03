@@ -2,27 +2,31 @@
 import join from 'lodash/join'
 import size from 'lodash/size'
 import map from 'lodash/fp/map'
+import fetch from 'node-fetch'
+import {} from '@google/maps'
 const distanceBaseUrl =
     'https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial'
 
-function getDistanceMatrix(origins, destinations) {
+export function getDistanceMatrix(origins, destinations) {
     const originQuery = generateRequestParamsFromFilters(origins)
     const destinationQuery = generateRequestParamsFromFilters(destinations)
-    const distanceMatrixUrl = `${baseUrl}&origins=${originQuery}&destinations=${destinationQuery}&key=${
+    const distanceMatrixUrl = `${distanceBaseUrl}&origins=${originQuery}&destinations=${destinationQuery}&key=${
         process.env.ETA_API_KEY
     }`
 
-    fetch(baseUrl).then(result => {
-        return result
-    })
+    return fetch(distanceMatrixUrl).then(res => res.json())
 }
 
 function generateRequestParamsFromFilters(locations) {
-    if (size(locations) == 1) {
-        const { lat, lng } = location[0]
+    if (locations.length === 1) {
+        const { lat, lng } = locations[0]
         return encodeURIComponent(`${lat}, ${lng}`)
     }
     const locationArray = map(loc => `${loc.lat}, ${loc.lng}`)(locations)
 
     return `${encodeURIComponent(join(locationArray, '|'))}`
+}
+
+function find(originIndex, destinationindex, data) {
+    return [(originIndex - 1) * size(data)] + destinationIndex
 }
