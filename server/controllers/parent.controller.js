@@ -23,7 +23,7 @@ function getUserData(req, res, next) {
             const { school_id } = parentValues
 
             return findOne('School', { school_id }).then(school => {
-                const schoolData = school ? school.schoolValues : {}
+                const schoolData = school ? school.dataValues : {}
                 return findMultiple('Student', { parent_id }).then(students => {
                     if (students) {
                         const { dataValues: studentValues } = students
