@@ -1,6 +1,11 @@
 module.exports = {
     extends: ['airbnb', 'prettier'],
     plugins: ['import', 'prettier'],
+
+    env: {
+        node: true,
+        es6: true,
+    },
     rules: {
         indent: ['error', 4],
         semi: 0,

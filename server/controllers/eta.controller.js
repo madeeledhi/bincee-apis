@@ -13,9 +13,12 @@ function getEta(req, res) {
 
     return getDistanceMatrix(JSON.parse(from), JSON.parse(to)).then(resETA => {
         if (resETA) {
-            return res.status(200).json(resETA)
+            return res.status(200).json({ status: 200, data: resETA })
         }
-        res.status(404).json({ message: 'ETA Not Found' })
+        res.status(200).json({
+            status: 404,
+            data: { message: 'ETA Not Found' },
+        })
     })
 
     // return getDirection(

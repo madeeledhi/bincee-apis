@@ -24,9 +24,12 @@ function getUserById(req, res) {
     const { id } = getOr({}, 'params')(req)
     return findOne('User', { id }).then(resUser => {
         if (resUser) {
-            return res.status(200).json(resUser)
+            return res.status(200).json({ status: 200, data: resUser })
         }
-        res.status(404).json({ message: 'User Not Found' })
+        res.status(200).json({
+            status: 400,
+            data: { message: 'User Not Found' },
+        })
     })
 }
 
@@ -34,9 +37,11 @@ function getUserByUsername(req, res) {
     const { username } = getOr({}, 'query')(req)
     return findOne('User', { username }).then(resUser => {
         if (resUser) {
-            return res.status(200).json(resUser)
+            return res.status(200).json({ status: 200, data: resUser })
         }
-        return res.status(404).json({ message: 'User Not Found' })
+        return res
+            .status(200)
+            .json({ status: 404, data: { message: 'User Not Found' } })
     })
 }
 
@@ -55,11 +60,15 @@ function create(req, res, next) {
             const user = { username, password, type, token }
 
             return createOne('User', user)
-                .then(savedUser => res.status(200).json(savedUser))
+                .then(savedUser =>
+                    res.status(200).json({ status: 200, data: savedUser }),
+                )
                 .catch(e => next(e))
         }
 
-        return res.status(302).json({ message: 'User Already Exists' })
+        return res
+            .status(200)
+            .json({ status: 302, data: { message: 'User Already Exists' } })
     })
 }
 
@@ -70,7 +79,7 @@ function updateUser(req, res, next) {
         'User',
         { id },
         username && password ? { username, password } : {},
-    ).then(user => res.status(200).json(user))
+    ).then(user => res.status(200).json({ status: 200, data: user }))
 }
 
 /**
@@ -90,12 +99,18 @@ function list(req, res, next) {
             const { type } = getOr(0, 'dataValues')(resUser)
             if (type === 1) {
                 return listAll('User')
-                    .then(users => res.json(users))
+                    .then(users =>
+                        res.status(200).json({ status: 200, data, users }),
+                    )
                     .catch(e => next(e))
             }
-            return res.status(401).send({ message: 'Unauthorized Access' })
+            return res
+                .status(200)
+                .send({ status: 401, data: { message: 'Unauthorized Access' } })
         }
-        return res.status(404).send({ message: 'No User Found' })
+        return res
+            .status(200)
+            .send({ status: 404, data: { message: 'No User Found' } })
     })
 }
 
@@ -106,7 +121,11 @@ function list(req, res, next) {
 function removeUserById(req, res, next) {
     const { id } = getOr({}, 'params')(req)
     destroy('User', { id })
-        .then(() => res.status(200).json('User Deleted'))
+        .then(() =>
+            res
+                .status(200)
+                .json({ status: 200, data: { message: 'User Deleted' } }),
+        )
         .catch(e => next(e))
 }
 

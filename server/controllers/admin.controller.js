@@ -42,8 +42,11 @@ function createSchool(req, res, next) {
                         return res
                             .status(200)
                             .json({
-                                username,
-                                ...schoolValues,
+                                status: 200,
+                                data: {
+                                    username,
+                                    ...schoolValues,
+                                },
                             })
                             .catch(err => {
                                 destroy('User', { id })
@@ -54,7 +57,9 @@ function createSchool(req, res, next) {
                 .catch(e => next(e))
         }
 
-        return res.status(302).json({ message: 'School Already Exists' })
+        return res
+            .status(200)
+            .json({ status: 302, data: { message: 'School Already Exists' } })
     })
 }
 
@@ -62,7 +67,9 @@ function deleteSchool(req, res, next) {
     const { id } = getOr({}, 'params')(req)
     return destroy('School', { school_id: id }).then(() => {
         return destroy('User', { id }).then(() =>
-            res.status(200).json({ message: 'School Deleted' }),
+            res
+                .status(200)
+                .json({ status: 200, data: { message: 'School Deleted' } }),
         )
     })
 }
@@ -71,19 +78,21 @@ function updateSchoolDetails(req, res, next) {
     const newData = getOr({}, 'body')(req)
     const { id } = getOr({}, 'params')(req)
     return update('School', { school_id: id }, newData).then(school =>
-        res.status(200).json(school),
+        res.status(200).json({ status: 200, data: school }),
     )
 }
 
 function getSchool(req, res, next) {
     const { id } = getOr({}, 'params')(req)
     return findOne('School', { school_id: id }).then(school =>
-        res.status(200).json(school),
+        res.status(200).json({ status: 200, data: school }),
     )
 }
 
 function schoolList(req, res, next) {
-    return listAll('School').then(school => res.status(200).json(school))
+    return listAll('School').then(school =>
+        res.status(200).json({ status: 200, data: school }),
+    )
 }
 
 export default {

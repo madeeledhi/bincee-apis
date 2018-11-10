@@ -25,15 +25,22 @@ function getUserData(req, res, next) {
                     const { dataValues: studentValues } = students
 
                     return res.status(200).json({
-                        ...parentValues,
-                        kids: studentValues,
+                        status: 200,
+                        data: {
+                            ...parentValues,
+                            kids: studentValues,
+                        },
                     })
                 }
-                return res.status(200).json({ ...parentValues, kids: [] })
+                return res
+                    .status(200)
+                    .json({ status: 200, data: { ...parentValues, kids: [] } })
             })
         }
 
-        return res.status(404).json({ message: 'No Students Found' })
+        return res
+            .status(200)
+            .json({ status: 404, data: { message: 'No Students Found' } })
     })
 }
 
