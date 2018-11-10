@@ -2,6 +2,7 @@ import { tableConfig } from '../utils'
 /**
  * Student Schema
  */
+
 const Parent = (sequelize, DataTypes) => {
     const Parent = sequelize.define(
         'Parent',
