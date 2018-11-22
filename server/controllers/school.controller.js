@@ -342,7 +342,7 @@ function createShift(req, res, next) {
                         shift_name,
                         start_time,
                         end_time,
-                        school_id,
+                        school_id: id,
                     }).then(shift => {
                         return res
                             .status(200)
