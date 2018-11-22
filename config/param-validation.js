@@ -79,11 +79,7 @@ export default {
         },
     },
     createShift: {
-        body: {
-            shift_name: Joi.string().required(),
-            start_time: Joi.string().required(),
-            end_time: Joi.string().required(),
-        },
+        body: {},
     },
 
     // POST /api/school
