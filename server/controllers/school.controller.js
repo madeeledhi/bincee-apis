@@ -117,7 +117,7 @@ function createLeave(req, res, next) {
     const { from_date, to_date, student_id } = getOr({}, 'body')(req)
     return findOne('Leaves', { from_date, to_date, student_id }).then(
         resLeave => {
-            if (resLeave) {
+            if (!resLeave) {
                 return createOne('Leaves', {
                     from_date,
                     to_date,
