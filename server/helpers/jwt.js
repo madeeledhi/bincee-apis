@@ -11,7 +11,6 @@ function jwt() {
             '/api/auth/login',
             '/api/health-check',
             '/api/users/random-number',
-            '/photos/*',
         ],
     })
 }

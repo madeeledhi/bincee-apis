@@ -16,12 +16,19 @@ import config from './config'
 import APIError from '../server/helpers/APIError'
 import jwt from '../server/helpers/jwt'
 import errorHandler from '../server/helpers/errorHandler'
+import fs from 'fs'
 // import { intializeFirebase, registerListeners } from '../server/utils'
 
 const app = express()
 
 const staticPath = path.join(__dirname, '../server/public/images')
 console.log('static path: ', staticPath)
+
+if (!fs.existsSync(staticPath)) {
+    fs.mkdirSync(path.join(__dirname, '../server/public'))
+    fs.mkdirSync(path.join(__dirname, '../server/public/images'))
+}
+
 app.use('/images', express.static(staticPath))
 
 if (config.env === 'development') {

@@ -1,4 +1,5 @@
 // libs
+import path from 'path'
 import getOr from 'lodash/fp/getOr'
 import filter from 'lodash/fp/filter'
 import reduce from 'lodash/fp/reduce'
@@ -8,9 +9,11 @@ import multer from 'multer'
 // src
 import { createFBData } from '../utils'
 
+const staticPath = path.join(__dirname, '../public/images')
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'server/public/images')
+        cb(null, staticPath)
     },
     filename: (req, file, cb) => {
         console.log('request: ', file)
