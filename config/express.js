@@ -1,5 +1,6 @@
 import express from 'express'
 import logger from 'morgan'
+import path from 'path'
 import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
 import compress from 'compression'
@@ -18,6 +19,10 @@ import errorHandler from '../server/helpers/errorHandler'
 // import { intializeFirebase, registerListeners } from '../server/utils'
 
 const app = express()
+
+const staticPath = path.join(__dirname, '../server/public/images')
+console.log('static path: ', staticPath)
+app.use('/images', express.static(staticPath))
 
 if (config.env === 'development') {
     app.use(logger('dev'))
@@ -62,8 +67,7 @@ if (config.env === 'development') {
 const baseUrl = '/api'
 
 // use JWT auth to secure the api
-app.use(jwt())
-
+// app.use(jwt()
 // mount all routes on /api path
 app.use(`${baseUrl}`, routes)
 
@@ -75,7 +79,6 @@ app.use((req, res, next) => {
 
 // global error handler
 app.use(errorHandler)
-
 // log error in winston transports except when executing test suite
 if (config.env !== 'test') {
     app.use(

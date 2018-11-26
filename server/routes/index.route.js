@@ -1,5 +1,6 @@
 // libs
 import express from 'express'
+import path from 'path'
 
 // src
 import userRoutes from './user.route'
@@ -9,6 +10,7 @@ import schoolRoute from './school.route'
 import rideRoute from './ride.route'
 import parentRoute from './parent.route'
 import etaRoute from './eta.route'
+import avatarRouter from './avatar.route'
 
 const router = express.Router() // eslint-disable-line new-cap
 
@@ -32,5 +34,6 @@ router.use('/auth', authRoutes)
 router.use('/ride', rideRoute)
 
 router.use('/parent', parentRoute)
+router.use('/avatar', avatarRouter)
 
 export default router
