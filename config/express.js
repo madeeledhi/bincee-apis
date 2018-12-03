@@ -51,6 +51,7 @@ app.use(methodOverride())
 app.use(helmet())
 
 // enable CORS - Cross Origin Resource Sharing
+app.options('*', cors())
 app.use(cors())
 
 // enable detailed API logging in dev env
