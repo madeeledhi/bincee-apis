@@ -2,6 +2,8 @@
 import jwt from 'jsonwebtoken'
 import httpStatus from 'http-status'
 import getOr from 'lodash/fp/getOr'
+import map from 'lodash/fp/map'
+import size from 'lodash/fp/size'
 
 // src
 import {
@@ -25,21 +27,57 @@ function getUserData(req, res, next) {
             return findOne('School', { school_id }).then(school => {
                 const schoolData = school ? school.dataValues : {}
                 return findMultiple('Student', { parent_id }).then(students => {
-                    if (students) {
-                        const { dataValues: studentValues } = students
-
-                        return res.status(200).json({
-                            status: 200,
-                            data: {
-                                ...parentValues,
-                                school: schoolData,
-                                kids: studentValues,
-                            },
+                    if (size(students) > 0) {
+                        const kids = map(student => {
+                            const { dataValues: studentValue } = student
+                            const {
+                                grade: grade_id,
+                                shift: shift_id,
+                                driver_id,
+                            } = student
+                            return findOne('Driver', {
+                                driver_id,
+                            }).then(driver => {
+                                return findOne('Shift', {
+                                    shift_id,
+                                }).then(shift => {
+                                    return findOne('Grade', {
+                                        grade_id,
+                                    }).then(grade => {
+                                        return {
+                                            ...studentValue,
+                                            grade: grade
+                                                ? grade.dataValues
+                                                : {},
+                                            shift: shift
+                                                ? shift.dataValues
+                                                : {},
+                                            driver: driver
+                                                ? driver.dataValues
+                                                : {},
+                                        }
+                                    })
+                                })
+                            })
+                        })(students)
+                        return Promise.all(kids).then(kidsData => {
+                            return res.status(200).json({
+                                status: 200,
+                                data: {
+                                    ...parentValues,
+                                    school: schoolData,
+                                    kids: kidsData,
+                                },
+                            })
                         })
                     }
                     return res.status(200).json({
                         status: 200,
-                        data: { ...parentValues, kids: [] },
+                        data: {
+                            ...parentValues,
+                            school: schoolData,
+                            kids: [],
+                        },
                     })
                 })
             })
@@ -47,7 +85,7 @@ function getUserData(req, res, next) {
 
         return res
             .status(200)
-            .json({ status: 404, data: { message: 'No Students Found' } })
+            .json({ status: 404, data: { message: 'No Parent Found' } })
     })
 }
 

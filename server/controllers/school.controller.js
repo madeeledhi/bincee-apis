@@ -93,6 +93,7 @@ function createNotification(req, res, next) {
                 last_updated,
                 type,
                 last_updated,
+                description,
             }).then(announcement => {
                 const { id: anouncement_id } = announcement
                 const array = map(studentArray, function() {
@@ -624,9 +625,25 @@ function studentList(req, res, next) {
 }
 function driverBusList(req, res, next) {
     const { id } = getOr({}, 'params')(req)
-    return findMultiple('Bus', { driver_id: id }).then(bus =>
-        res.status(200).json({ status: 200, data: bus }),
-    )
+    return findOne('Driver', { driver_id: id }).then(driver => {
+        if (driver) {
+            const { dataValues: driverValues } = driver
+            return findOne('Bus', { driver_id: id }).then(bus => {
+                if (bus) {
+                    const { dataValues: busValues } = bus
+                    const data = { ...driverValues, bus: busValues }
+                    return res.status(200).json({ status: 200, data })
+                } else {
+                    const data = { ...driverValues, bus: {} }
+                    return res.status(200).json({ status: 200, data })
+                }
+            })
+        } else {
+            return res
+                .status(200)
+                .json({ status: 404, data: { message: 'No Driver Exists' } })
+        }
+    })
 }
 function studentNotificationList(req, res, next) {
     const { id } = getOr({}, 'params')(req)
@@ -654,23 +671,30 @@ function driverList(req, res, next) {
     )(authorization)
 
     return findOne('User', { token }).then(resUser => {
-        const { dataValues } = resUser
-        const { id } = dataValues
-        return findOne('User', { token }).then(resUser => {
-            if (resUser) {
-                const { dataValues } = resUser
-                const { id } = dataValues
-                return findMultiple('Driver', {
-                    school_id: id,
-                }).then(driver =>
-                    res.status(200).json({ status: 200, data: driver }),
-                )
-            }
+        if (resUser) {
+            const { dataValues } = resUser
+            const { id } = dataValues
+            return findOne('User', { token }).then(resUser => {
+                if (resUser) {
+                    const { dataValues } = resUser
+                    const { id } = dataValues
+                    return findMultiple('Driver', {
+                        school_id: id,
+                    }).then(driver =>
+                        res.status(200).json({ status: 200, data: driver }),
+                    )
+                }
+                return res.status(200).json({
+                    status: 404,
+                    data: { message: 'No Driver Accounts Found' },
+                })
+            })
+        } else {
             return res.status(200).json({
                 status: 404,
-                data: { message: 'No Driver Accounts Founds' },
+                data: { message: 'No Driver Accounts Found' },
             })
-        })
+        }
     })
 }
 function parentList(req, res, next) {
