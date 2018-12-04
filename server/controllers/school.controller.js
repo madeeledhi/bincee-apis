@@ -366,9 +366,13 @@ function createShift(req, res, next) {
 //Delete funtions
 function deleteBus(req, res, next) {
     const { id } = getOr({}, 'params')(req)
-    return destroy('Bus', { id }).then(() =>
-        res.status(200).json({ status: 200, data: { message: 'Bus Deleted' } }),
-    )
+    return destroy('Bus', { id })
+        .then(() =>
+            res
+                .status(200)
+                .json({ status: 200, data: { message: 'Bus Deleted' } }),
+        )
+        .catch(e => next(e))
 }
 function deleteLeave(req, res, next) {
     const { id } = getOr({}, 'params')(req)
@@ -380,53 +384,66 @@ function deleteLeave(req, res, next) {
 }
 function deleteShift(req, res, next) {
     const { id } = getOr({}, 'params')(req)
-    return destroy('Shift', { shift_id: id }).then(() =>
-        res
-            .status(200)
-            .json({ status: 200, data: { message: 'Shift Deleted' } }),
-    )
+    return destroy('Shift', { shift_id: id })
+        .then(() =>
+            res
+                .status(200)
+                .json({ status: 200, data: { message: 'Shift Deleted' } }),
+        )
+        .catch(e => next(e))
 }
 function deleteGrade(req, res, next) {
     const { id } = getOr({}, 'params')(req)
-    return destroy('Grade', {
-        grade_id: id,
-    }).then(() =>
-        res
-            .status(200)
-            .json({ status: 200, data: { message: 'Grade Deleted' } }),
-    )
+    return destroy('Grade', { grade_id: id })
+        .then(() =>
+            res
+                .status(200)
+                .json({ status: 200, data: { message: 'Grade Deleted' } }),
+        )
+        .catch(e => next(e))
 }
 function deleteStudent(req, res, next) {
     const { id } = getOr({}, 'params')(req)
-    return destroy('Student', { id }).then(() =>
-        res
-            .status(200)
-            .json({ status: 200, data: { message: 'Student Deleted' } }),
-    )
+    return destroy('Student', { id })
+        .then(() =>
+            res.status(200).json({
+                status: 200,
+                data: { message: 'Student Deleted' },
+            }),
+        )
+        .catch(e => next(e))
 }
 function deleteDriver(req, res, next) {
     const { id } = getOr({}, 'params')(req)
-    return destroy('Bus', { driver_id: id }).then(() => {
-        return destroy('Driver', { driver_id: id }).then(() => {
-            return destroy('User', {
-                id,
-            }).then(() =>
-                res
-                    .status(200)
-                    .json({ status: 200, data: { message: 'Driver Deleted' } }),
-            )
+    return destroy('Bus', { driver_id: id })
+        .then(() => {
+            return destroy('Driver', { driver_id: id }).then(() => {
+                return destroy('User', {
+                    id,
+                }).then(() =>
+                    res.status(200).json({
+                        status: 200,
+                        data: { message: 'Driver Deleted' },
+                    }),
+                )
+            })
         })
-    })
+        .catch(e => next(e))
 }
 function deleteParent(req, res, next) {
     const { id } = getOr({}, 'params')(req)
-    return destroy('Parent', { parent_id: id }).then(() => {
-        return destroy('User', { id }).then(() =>
-            res
-                .status(200)
-                .json({ status: 200, data: { message: 'Parent Deleted' } }),
-        )
-    })
+    return destroy('Parent', { parent_id: id })
+        .then(() => {
+            return destroy('User', {
+                id,
+            }).then(() =>
+                res.status(200).json({
+                    status: 200,
+                    data: { message: 'Parent Deleted' },
+                }),
+            )
+        })
+        .catch(e => next(e))
 }
 
 //Update funtions

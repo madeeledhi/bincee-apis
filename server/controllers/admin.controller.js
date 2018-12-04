@@ -65,13 +65,18 @@ function createSchool(req, res, next) {
 
 function deleteSchool(req, res, next) {
     const { id } = getOr({}, 'params')(req)
-    return destroy('School', { school_id: id }).then(() => {
-        return destroy('User', { id }).then(() =>
-            res
-                .status(200)
-                .json({ status: 200, data: { message: 'School Deleted' } }),
-        )
-    })
+    return destroy('School', { school_id: id })
+        .then(() => {
+            return destroy('User', {
+                id,
+            }).then(() =>
+                res.status(200).json({
+                    status: 200,
+                    data: { message: 'School Deleted' },
+                }),
+            )
+        })
+        .catch(e => next(e))
 }
 
 function updateSchoolDetails(req, res, next) {
