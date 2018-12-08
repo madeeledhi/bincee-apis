@@ -4,7 +4,8 @@ import httpStatus from 'http-status'
 import getOr from 'lodash/fp/getOr'
 import split from 'lodash/fp/split'
 import flow from 'lodash/fp/flow'
-import map from 'lodash/map'
+import map from 'lodash/fp/map'
+import size from 'lodash/fp/size'
 
 // src
 import {
@@ -92,19 +93,30 @@ function createNotification(req, res, next) {
                 school_id,
                 last_updated,
                 type,
-                last_updated,
                 description,
             }).then(announcement => {
-                const { id: anouncement_id } = announcement
-                const array = map(studentArray, function() {
-                    return {
-                        student_id: student_id,
-                        anouncement_id: anouncement_id,
-                    }
-                })
-                return createMutiple('Notify', array).then(notify => {
-                    return res.status(200).json({ status: 200, data: notify })
-                })
+                const { dataValues } = announcement
+                const { id: anouncement_id } = dataValues
+                const array = map(student_id => ({
+                    student_id,
+                    anouncement_id,
+                }))(studentArray)
+                if (size(studentArray) > 0) {
+                    return createMutiple('Notify', array).then(notify => {
+                        return res.status(200).json({
+                            status: 200,
+                            data: {
+                                announcement: dataValues,
+                                notify,
+                            },
+                        })
+                    })
+                } else {
+                    return res.status(200).json({
+                        status: 200,
+                        data: announcement,
+                    })
+                }
             })
         } else {
             return res
