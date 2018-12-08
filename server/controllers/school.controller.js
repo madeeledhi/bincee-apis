@@ -485,7 +485,7 @@ function updateLeave(req, res, next) {
 function updateAnnouncement(req, res, next) {
     const newData = getOr({}, 'body')(req)
     const { id } = getOr({}, 'params')(req)
-    return update('Announcements', { id }, newData).then(announcement =>
+    return update('Announcement', { id }, newData).then(announcement =>
         res.status(200).json({ status: 200, data: announcement }),
     )
 }
@@ -540,7 +540,9 @@ function getLeave(req, res, next) {
 }
 function getAnnouncement(req, res, next) {
     const { id } = getOr({}, 'params')(req)
-    return findOne('Annoucement', { id }).then(announcement =>
+    return findOne('Announcement', {
+        id,
+    }).then(announcement =>
         res.status(200).json({ status: 200, data: announcement }),
     )
 }
@@ -716,7 +718,7 @@ function parentStudentNotifications(req, res, next) {
                 ).then(announcements => {
                     return announcements
                 })
-            })(Students)
+            })(students)
 
             return Promise.all(notifications).then(response => {
                 return res.status(200).json({ status: 200, data: response })
