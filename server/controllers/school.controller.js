@@ -773,6 +773,7 @@ function studentLeaveList(req, res, next) {
         res.status(200).json({ status: 200, data: leave }),
     )
 }
+
 function parentStudentList(req, res, next) {
     const { id } = getOr({}, 'params')(req)
     return findMultiple('Student', { parent_id: id }).then(student =>
@@ -813,6 +814,7 @@ function driverList(req, res, next) {
         }
     })
 }
+
 function parentList(req, res, next) {
     const { authorization } = getOr({}, 'headers')(req)
     const token = flow(
