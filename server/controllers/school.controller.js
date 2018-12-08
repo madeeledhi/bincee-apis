@@ -699,6 +699,34 @@ function schoolNotificationList(req, res, next) {
         res.status(200).json({ status: 200, data: announcements }),
     )
 }
+
+function parentStudentNotifications(req, res, next) {
+    const { id } = getOr({}, 'params')(req)
+    return findMultiple('Student', {
+        parent_id: id,
+    }).then(students => {
+        if (size(students) > 0) {
+            const notifications = map(student => {
+                const { dataValues: studentValues } = students
+                const { id: student_id } = dataValues
+                return findAcross(
+                    'Announcement',
+                    { student_id },
+                    'Notify',
+                ).then(announcements => {
+                    return announcements
+                })
+            })(Students)
+
+            return Promise.all(notifications).then(response => {
+                return res.status(200).json({ status: 200, data: response })
+            })
+        } else {
+            return res.status(200).json({ status: 200, data: [] })
+        }
+    })
+}
+
 function notificationList(req, res, next) {
     const { authorization } = getOr({}, 'headers')(req)
     const token = flow(
@@ -833,6 +861,7 @@ export default {
     studentNotificationList,
     schoolNotificationList,
     notificationList,
+    parentStudentNotifications,
     studentLeaveList,
     driverList,
     parentList,
