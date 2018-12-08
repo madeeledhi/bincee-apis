@@ -6,6 +6,8 @@ import split from 'lodash/fp/split'
 import flow from 'lodash/fp/flow'
 import map from 'lodash/fp/map'
 import size from 'lodash/fp/size'
+import reduce from 'lodash/fp/reduce'
+import keys from 'lodash/fp/keys'
 
 // src
 import {
@@ -716,12 +718,19 @@ function parentStudentNotifications(req, res, next) {
                     { student_id },
                     'Notify',
                 ).then(announcements => {
-                    return announcements
+                    return { [student_id]: announcements }
                 })
             })(students)
 
             return Promise.all(notifications).then(response => {
-                return res.status(200).json({ status: 200, data: response })
+                const results = reduce((final, current) => {
+                    const [key] = keys(current)
+                    return {
+                        ...final,
+                        [key]: current[key],
+                    }
+                }, {})(response)
+                return res.status(200).json({ status: 200, data: results })
             })
         } else {
             return res.status(200).json({ status: 200, data: [] })
