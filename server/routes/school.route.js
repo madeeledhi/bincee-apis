@@ -40,6 +40,8 @@ router
 router
     .route('/student/notification/:id')
     .get(schoolCtrl.studentNotificationList)
+router.route('/notification/list/:id').get(schoolCtrl.schoolNotificationList)
+router.route('/notification/list/').get(schoolCtrl.notificationList)
 
 router
     .route('/notification/:id')

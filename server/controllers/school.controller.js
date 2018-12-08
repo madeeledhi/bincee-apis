@@ -664,9 +664,42 @@ function driverBusList(req, res, next) {
 }
 function studentNotificationList(req, res, next) {
     const { id } = getOr({}, 'params')(req)
-    return findMultiple('Notify', { student_id: id }).then(notify =>
-        res.status(200).json({ status: 200, data: notify }),
+
+    return findAcross('Announcement', { student_id: id }, 'Notify').then(
+        announcements =>
+            res.status(200).json({ status: 200, data: announcements }),
     )
+}
+function schoolNotificationList(req, res, next) {
+    const { id } = getOr({}, 'params')(req)
+    return findMultiple('Announcement', {
+        school_id: id,
+    }).then(announcements =>
+        res.status(200).json({ status: 200, data: announcements }),
+    )
+}
+function notificationList(req, res, next) {
+    const { authorization } = getOr({}, 'headers')(req)
+    const token = flow(
+        split(' '),
+        splitted => splitted[1],
+    )(authorization)
+
+    return findOne('User', { token }).then(resUser => {
+        if (resUser) {
+            const { dataValues } = resUser
+            const { id } = dataValues
+            return findMultiple('Announcement', {
+                school_id: id,
+            }).then(announcements =>
+                res.status(200).json({ status: 200, data: announcements }),
+            )
+        }
+        return res.status(200).json({
+            status: 404,
+            data: { message: 'No Announcements Founds' },
+        })
+    })
 }
 function studentLeaveList(req, res, next) {
     const { id } = getOr({}, 'params')(req)
@@ -777,6 +810,8 @@ export default {
     driverBusList,
     parentStudentList,
     studentNotificationList,
+    schoolNotificationList,
+    notificationList,
     studentLeaveList,
     driverList,
     parentList,
