@@ -95,27 +95,35 @@ function createNotification(req, res, next) {
                 type,
                 description,
             }).then(announcement => {
-                const { dataValues } = announcement
-                const { id: anouncement_id } = dataValues
-                const array = map(student_id => ({
-                    student_id,
-                    anouncement_id,
-                }))(studentArray)
-                if (size(studentArray) > 0) {
-                    return createMutiple('Notify', array).then(notify => {
-                        return res.status(200).json({
-                            status: 200,
-                            data: {
-                                announcement: dataValues,
-                                notify,
-                            },
-                        })
-                    })
-                } else {
+                if (type === 'school') {
                     return res.status(200).json({
                         status: 200,
                         data: announcement,
                     })
+                } else {
+                    const { dataValues } = announcement
+                    const { id: anouncement_id } = dataValues
+                    const array = map(student_id => ({
+                        student_id,
+                        anouncement_id,
+                    }))(studentArray)
+                    if (size(studentArray) > 0) {
+                        return createMutiple('Notify', array).then(notify => {
+                            return res.status(200).json({
+                                status: 200,
+                                data: {
+                                    announcement: dataValues,
+                                    notify,
+                                },
+                            })
+                        })
+                    } else {
+                        return res.status(200).json({
+                            status: 200,
+                            data: announcement,
+                            notify: [],
+                        })
+                    }
                 }
             })
         } else {
@@ -686,6 +694,7 @@ function schoolNotificationList(req, res, next) {
     const { id } = getOr({}, 'params')(req)
     return findMultiple('Announcement', {
         school_id: id,
+        type: 'school',
     }).then(announcements =>
         res.status(200).json({ status: 200, data: announcements }),
     )
