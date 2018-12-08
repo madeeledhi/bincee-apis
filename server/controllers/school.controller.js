@@ -709,8 +709,8 @@ function parentStudentNotifications(req, res, next) {
     }).then(students => {
         if (size(students) > 0) {
             const notifications = map(student => {
-                const { dataValues: studentValues } = students
-                const { id: student_id } = dataValues
+                const { dataValues: studentValues } = student
+                const { id: student_id } = studentValues
                 return findAcross(
                     'Announcement',
                     { student_id },
