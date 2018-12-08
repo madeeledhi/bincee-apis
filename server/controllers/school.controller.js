@@ -104,26 +104,32 @@ function createNotification(req, res, next) {
                     })
                 } else {
                     const { dataValues } = announcement
-                    const { id: anouncement_id } = dataValues
-                    const array = map(student_id => ({
-                        student_id,
-                        anouncement_id,
-                    }))(studentArray)
+                    const { id: announcement_id } = dataValues
                     if (size(studentArray) > 0) {
-                        return createMutiple('Notify', array).then(notify => {
-                            return res.status(200).json({
+                        const multiply = map(student_id => {
+                            return createOne('Notify', {
+                                student_id,
+                                announcement_id,
+                            }).then(notify => {
+                                return notify
+                            })
+                        })(studentArray)
+                        return Promise.all(multiply).then(response =>
+                            res.status(200).json({
                                 status: 200,
                                 data: {
                                     announcement: dataValues,
-                                    notify,
+                                    notify: response,
                                 },
-                            })
-                        })
+                            }),
+                        )
                     } else {
                         return res.status(200).json({
                             status: 200,
-                            data: announcement,
-                            notify: [],
+                            data: {
+                                announcement,
+                                notify: [],
+                            },
                         })
                     }
                 }
