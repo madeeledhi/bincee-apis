@@ -64,8 +64,8 @@ export default {
     createStudent: {
         body: {
             fullname: Joi.string().required(),
-            grade: Joi.string().required(),
-            shift: Joi.string().required(),
+            grade: Joi.number().required(),
+            shift: Joi.number().required(),
             parent_id: Joi.number().required(),
             driver_id: Joi.number().required(),
             status: Joi.string().required(),
