@@ -8,6 +8,7 @@ import map from 'lodash/fp/map'
 import size from 'lodash/fp/size'
 import reduce from 'lodash/fp/reduce'
 import keys from 'lodash/fp/keys'
+import filter from 'lodash/fp/filter'
 
 // src
 import {
@@ -773,6 +774,52 @@ function studentLeaveList(req, res, next) {
         res.status(200).json({ status: 200, data: leave }),
     )
 }
+function leavesList(req, res, next) {
+    const { authorization } = getOr({}, 'headers')(req)
+    const token = flow(
+        split(' '),
+        splitted => splitted[1],
+    )(authorization)
+
+    return findOne('User', { token }).then(resUser => {
+        if (resUser) {
+            const { dataValues } = resUser
+            const { id } = dataValues
+
+            return listAll('Leaves').then(leaves => {
+                if (size(leaves) > 0) {
+                    const filteredLeaves = filter(leave => {
+                        const { dataValues: leaveValues } = leave
+                        const { student_id } = leaveValues
+                        return findOne('Student', {
+                            student_id,
+                            school_id: id,
+                        }).then(student => {
+                            if (student) {
+                                return true
+                            } else {
+                                return false
+                            }
+                        })
+                    })(leaves)
+
+                    return Promise.all(filteredLeaves).then(response => {
+                        return res
+                            .status(200)
+                            .json({ status: 200, data: response })
+                    })
+                } else {
+                    return res.status(200).json({ status: 200, data: [] })
+                }
+            })
+        } else {
+            return res.status(200).json({
+                status: 404,
+                data: { message: 'No Leaves Found' },
+            })
+        }
+    })
+}
 
 function parentStudentList(req, res, next) {
     const { id } = getOr({}, 'params')(req)
@@ -791,21 +838,11 @@ function driverList(req, res, next) {
         if (resUser) {
             const { dataValues } = resUser
             const { id } = dataValues
-            return findOne('User', { token }).then(resUser => {
-                if (resUser) {
-                    const { dataValues } = resUser
-                    const { id } = dataValues
-                    return findMultiple('Driver', {
-                        school_id: id,
-                    }).then(driver =>
-                        res.status(200).json({ status: 200, data: driver }),
-                    )
-                }
-                return res.status(200).json({
-                    status: 404,
-                    data: { message: 'No Driver Accounts Found' },
-                })
-            })
+            return findMultiple('Driver', {
+                school_id: id,
+            }).then(driver =>
+                res.status(200).json({ status: 200, data: driver }),
+            )
         } else {
             return res.status(200).json({
                 status: 404,
