@@ -4,6 +4,7 @@ import filter from "lodash/fp/filter"
 import reduce from "lodash/fp/reduce"
 import uniqueId from "lodash/fp/uniqueId"
 import size from "lodash/fp/size"
+import toLower from "lodash/fp/toLower"
 
 // src
 import {
@@ -81,9 +82,7 @@ function createRide(req, res) {
             const filteredStudents = filter(student => {
                 const { dataValues: studentValues } = student
                 const { status } = studentValues
-                return (
-                    toLower(status) !== "leave" && toLower(status) === "active"
-                )
+                return toLower(status) === "active"
             })(students)
             return res
                 .status(200)
