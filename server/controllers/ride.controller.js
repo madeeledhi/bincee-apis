@@ -77,7 +77,7 @@ function createRide(req, res) {
     //  Return students for current driver and return pickup or dropoff for current shift
     return findMultiple('Student', { driver_id, shift }).then(students => {
         if (!students) {
-            const filteredStudents = filter(({ status }) => status !== 'leave')(
+            const filteredStudents = filter(({ status }) => toLower(status) !== 'leave' && toLower(status) === 'active' )(
                 students,
             )
             return res.status(200).json({ status: 200, data: filteredStudents })
