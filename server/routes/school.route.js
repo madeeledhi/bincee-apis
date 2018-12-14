@@ -38,6 +38,7 @@ router
         validate(paramValidation.createNotification),
         schoolCtrl.createNotification,
     )
+    
 router
     .route('/student/notification/:id')
     .get(schoolCtrl.studentNotificationList)
