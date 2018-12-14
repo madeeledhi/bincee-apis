@@ -5,6 +5,8 @@ import reduce from "lodash/fp/reduce"
 import uniqueId from "lodash/fp/uniqueId"
 import size from "lodash/fp/size"
 import toLower from "lodash/fp/toLower"
+import flow from "lodash/fp/flow"
+import map from "lodash/fp/map"
 
 // src
 import {
@@ -79,14 +81,50 @@ function createRide(req, res) {
     //  Return students for current driver and return pickup or dropoff for current shift
     return findMultiple("Student", { driver_id, shift }).then(students => {
         if (size(students) > 0) {
-            const filteredStudents = filter(student => {
-                const { dataValues: studentValues } = student
-                const { status } = studentValues
-                return toLower(status) === "active"
-            })(students)
-            return res
-                .status(200)
-                .json({ status: 200, data: filteredStudents })
+            const filteredStudents = flow(
+                filter(student => {
+                    const { dataValues: studentValues } = student
+                    const { status } = studentValues
+                    return toLower(status) === "active"
+                }),
+                map(filteredStudent => {
+                    const {
+                        id,
+                        fullname,
+                        graded,
+                        photo,
+                        shift,
+                        parent_id
+                    } = filteredStudent
+                    return findOne("Parent", { parent_id }).then(parent => {
+                        const { dataValues: parentValues } = parent
+                        const {
+                            fullname,
+                            phone_no,
+                            address,
+                            lat,
+                            lng,
+                            email
+                        } = parentValues
+                        return {
+                            id,
+                            fullname,
+                            graded,
+                            photo,
+                            shift,
+                            parentname: fullname,
+                            phone_no,
+                            address,
+                            lat,
+                            lng,
+                            email
+                        }
+                    })
+                })
+            )(students)
+            return Promise.all(filteredStudents).then(response =>
+                res.status(200).json({ status: 200, data: response })
+            )
         }
         return res
             .status(200)
