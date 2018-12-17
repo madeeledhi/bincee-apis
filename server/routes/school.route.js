@@ -31,14 +31,14 @@ router
     .post(schoolCtrl.updateLeave)
 
 router.route('/student/leaves/:id').get(schoolCtrl.studentLeaveList)
-router.route('/student/leaves/list').get(schoolCtrl.leavesList)
+router.route('/leaves/list').get(schoolCtrl.leavesList)
 router
     .route('/notification/create')
     .post(
         validate(paramValidation.createNotification),
         schoolCtrl.createNotification,
     )
-    
+
 router
     .route('/student/notification/:id')
     .get(schoolCtrl.studentNotificationList)
