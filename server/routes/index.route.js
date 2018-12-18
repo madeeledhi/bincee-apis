@@ -9,7 +9,6 @@ import adminRoutes from './admin.route'
 import schoolRoute from './school.route'
 import rideRoute from './ride.route'
 import parentRoute from './parent.route'
-import etaRoute from './eta.route'
 import avatarRouter from './avatar.route'
 
 const router = express.Router() // eslint-disable-line new-cap
@@ -19,8 +18,6 @@ router.get('/health-check', (req, res) => res.send('OK'))
 
 // mount user routes at /users
 router.use('/users', userRoutes)
-
-router.use('/eta', etaRoute)
 
 // mount user routes at /admin
 router.use('/admin', adminRoutes)

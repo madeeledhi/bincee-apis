@@ -21,6 +21,7 @@ import {
     destroy,
     update,
     findAcross,
+    sendNotification,
 } from '../utils'
 import config from '../../config/config'
 import Announcement from '../models/announcement.model'
@@ -99,6 +100,10 @@ function createNotification(req, res, next) {
                 description,
             }).then(announcement => {
                 if (type === 'school') {
+                    sendNotification(`${type}-${school_id}`, {
+                        title: 'Announcement',
+                        description,
+                    })
                     return res.status(200).json({
                         status: 200,
                         data: announcement,
@@ -107,11 +112,16 @@ function createNotification(req, res, next) {
                     const { dataValues } = announcement
                     const { id: announcement_id } = dataValues
                     if (size(studentArray) > 0) {
-                        const multiply = map(student_id => {
+                        const multiply = map(({ student_id, parent_id }) => {
                             return createOne('Notify', {
                                 student_id,
                                 announcement_id,
                             }).then(notify => {
+                                sendNotification(`${type}-${parent_id}`, {
+                                    title: 'Announcement',
+                                    student: student_id,
+                                    description,
+                                })
                                 return notify
                             })
                         })(studentArray)
