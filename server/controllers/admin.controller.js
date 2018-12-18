@@ -21,6 +21,7 @@ function createSchool(req, res, next) {
         name,
         address,
         phone_no,
+        email,
         lat = null,
         lng = null,
     } = getOr({}, 'body')(req)
@@ -29,7 +30,7 @@ function createSchool(req, res, next) {
         if (!resUser) {
             const token = jwt.sign({ username }, config.jwtSecret)
             const user = { username, password, type: 2, token }
-            const school = { address, name, phone_no, lat, lng }
+            const school = { address, name, email, phone_no, lat, lng }
             return createOne('User', user)
                 .then(savedUser => {
                     const { dataValues } = savedUser

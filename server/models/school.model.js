@@ -26,6 +26,11 @@ const School = (sequelize, DataTypes) => {
                 allowNull: false,
                 unique: false,
             },
+            email: {
+                type: DataTypes.STRING,
+                allowNull: true,
+                unique: true,
+            },
             lat: { type: DataTypes.DOUBLE, allowNull: true, unique: false },
             lng: { type: DataTypes.DOUBLE, allowNull: true, unique: false },
         },
