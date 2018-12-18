@@ -792,25 +792,34 @@ function leavesList(req, res, next) {
 
             return listAll("Leaves").then(leaves => {
                 if (size(leaves) > 0) {
-                    const filteredLeaves = filter(leave => {
+                    const filteredLeaves = map(leave => {
                         const { dataValues: leaveValues } = leave
                         const { student_id } = leaveValues
                         return findOne("Student", {
-                            student_id,
+                            id: student_id,
                             school_id: id
                         }).then(student => {
                             if (student) {
-                                return true
+                                const { dataValues: studentValues } = student
+                                return {
+                                    ...leaveValues,
+                                    ...studentValues,
+                                    found: true
+                                }
                             } else {
-                                return false
+                                return {
+                                    ...leaveValues,
+                                    found: false
+                                }
                             }
                         })
                     })(leaves)
 
                     return Promise.all(filteredLeaves).then(response => {
+                        const filteredResponse = filter(({found}) => found === true)(response)
                         return res
                             .status(200)
-                            .json({ status: 200, data: response })
+                            .json({ status: 200, data: filteredResponse })
                     })
                 } else {
                     return res.status(200).json({ status: 200, data: [] })

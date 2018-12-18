@@ -17,11 +17,18 @@ const Leaves = (sequelize, DataTypes) => {
                 unique: false,
             },
             to_date: { type: DataTypes.DATE, allowNull: false, unique: false },
+            comment: {type: DataTypes.STRING, alowNull: true, unique: false },
             student_id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 unique: false,
                 references: { model: 'Student', key: 'id' },
+            },
+            school_id: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                unique: false,
+                references: { model: 'School', key: 'school_id' },
             },
         },
         tableConfig,
