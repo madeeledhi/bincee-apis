@@ -808,15 +808,24 @@ function leavesList(req, res, next) {
                         const { student_id } = leaveValues
                         return findOne('Student', {
                             id: student_id,
-                            school_id: id,
                         }).then(student => {
                             if (student) {
                                 const { dataValues: studentValues } = student
-                                return {
-                                    ...leaveValues,
-                                    ...studentValues,
-                                    found: true,
-                                }
+                                const { parent_id } = studentValues
+                                return findOne('Parent', {
+                                    parent_id,
+                                    school_id: id,
+                                }).then(parent => {
+                                    if (parent) {
+                                        return {
+                                            ...leaveValues,
+                                            ...studentValues,
+                                            found: true,
+                                        }
+                                    } else {
+                                        return { ...leaveValues, found: false }
+                                    }
+                                })
                             } else {
                                 return {
                                     ...leaveValues,
