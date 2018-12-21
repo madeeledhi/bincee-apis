@@ -805,7 +805,7 @@ function leavesList(req, res, next) {
                 if (size(leaves) > 0) {
                     const filteredLeaves = map(leave => {
                         const { dataValues: leaveValues } = leave
-                        const { student_id } = leaveValues
+                        const { student_id, id: leave_id } = leaveValues
                         return findOne('Student', {
                             id: student_id,
                         }).then(student => {
@@ -820,6 +820,7 @@ function leavesList(req, res, next) {
                                         return {
                                             ...leaveValues,
                                             ...studentValues,
+                                            id: leave_id,
                                             found: true,
                                         }
                                     } else {
