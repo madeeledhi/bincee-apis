@@ -78,9 +78,10 @@ function createStudent(req, res, next) {
 }
 
 function createNotification(req, res, next) {
-    const { studentArray, last_updated, description, type } = getOr({}, 'body')(
-        req,
-    )
+    const { studentArray, last_updated, title, description, type } = getOr(
+        {},
+        'body',
+    )(req)
 
     const { authorization } = getOr({}, 'headers')(req)
     const token = flow(
@@ -97,11 +98,12 @@ function createNotification(req, res, next) {
                 school_id,
                 last_updated,
                 type,
+                title,
                 description,
             }).then(announcement => {
                 if (type === 'school') {
                     sendNotification(`${type}-${school_id}`, {
-                        title: 'Announcement',
+                        title,
                         description,
                     })
                     return res.status(200).json({
@@ -118,7 +120,7 @@ function createNotification(req, res, next) {
                                 announcement_id,
                             }).then(notify => {
                                 sendNotification(`${type}-${parent_id}`, {
-                                    title: 'Announcement',
+                                    title,
                                     student: student_id,
                                     description,
                                 })
@@ -446,16 +448,19 @@ function deleteGrade(req, res, next) {
         )
         .catch(e => next(e))
 }
+
 function deleteStudent(req, res, next) {
     const { id } = getOr({}, 'params')(req)
-    return destroy('Student', { id })
-        .then(() =>
-            res.status(200).json({
-                status: 200,
-                data: { message: 'Student Deleted' },
-            }),
-        )
-        .catch(e => next(e))
+    return destroy('Leaves', { student_id: id }).then(() => {
+        return destroy('Student', { id })
+            .then(() =>
+                res.status(200).json({
+                    status: 200,
+                    data: { message: 'Student Deleted' },
+                }),
+            )
+            .catch(e => next(e))
+    })
 }
 function deleteDriver(req, res, next) {
     const { id } = getOr({}, 'params')(req)
