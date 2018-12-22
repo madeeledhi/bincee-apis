@@ -73,13 +73,30 @@ function create(req, res, next) {
 }
 
 function updateUser(req, res, next) {
-    const { username, password } = getOr({}, 'body')(req)
+    const { username, password, new_password } = getOr({}, 'body')(req)
     const { id } = getOr({}, 'params')(req)
-    return update(
-        'User',
-        { id },
-        username && password ? { username, password } : {},
-    ).then(user => res.status(200).json({ status: 200, data: user }))
+    if (username && password && new_password) {
+        return findOne('User', { username, password }).then(user => {
+            if (user) {
+                return update(
+                    'User',
+                    { id },
+                    { username, password: new_password },
+                ).then(user =>
+                    res.status(200).json({ status: 200, data: user }),
+                )
+            } else {
+                return res
+                    .status(200)
+                    .json({ status: 404, message: 'Invalid Username/Password' })
+            }
+        })
+    } else {
+        return res.status(200).json({
+            status: 404,
+            message: 'Invalid Username/Password',
+        })
+    }
 }
 
 /**
