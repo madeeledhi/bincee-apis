@@ -114,19 +114,21 @@ function createNotification(req, res, next) {
                     const { dataValues } = announcement
                     const { id: announcement_id } = dataValues
                     if (size(studentArray) > 0) {
-                        const multiply = map(({ student_id, parent_id }) => {
-                            return createOne('Notify', {
-                                student_id,
-                                announcement_id,
-                            }).then(notify => {
-                                sendNotification(`${type}-${parent_id}`, {
-                                    title,
-                                    student: student_id,
-                                    description,
+                        const multiply = map(
+                            ({ student_id, parent_id, fullname }) => {
+                                return createOne('Notify', {
+                                    student_id,
+                                    announcement_id,
+                                }).then(notify => {
+                                    sendNotification(`${type}-${parent_id}`, {
+                                        title,
+                                        student: fullname,
+                                        description,
+                                    })
+                                    return notify
                                 })
-                                return notify
-                            })
-                        })(studentArray)
+                            },
+                        )(studentArray)
                         return Promise.all(multiply).then(response =>
                             res.status(200).json({
                                 status: 200,
