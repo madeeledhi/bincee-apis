@@ -646,7 +646,7 @@ function busList(req, res, next) {
                         })
                     } else {
                         return res.status(200).json({
-                            status: 200,
+                            status: 404,
                             data: { message: 'No Bus Found' },
                         })
                     }
@@ -739,7 +739,7 @@ function studentList(req, res, next) {
                                                 ...studentValues,
                                                 grade_name: grade
                                                     ? grade.dataValues
-                                                          .grade_name
+                                                          .grade_section
                                                     : '',
                                                 shift_name: shift
                                                     ? shift.dataValues
