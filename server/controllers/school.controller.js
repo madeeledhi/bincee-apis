@@ -621,29 +621,37 @@ function busList(req, res, next) {
             const { dataValues } = resUser
             const { id, type } = dataValues
 
-            return findAcross('Bus', { school_id: id }, 'Driver').then(bus => {
-                if (bus) {
-                    const { dataValues: busValues } = bus
-                    const { driver_id } = busValues
-                    return findOne('Driver', { driver_id }).then(driver => {
-                        const data = {
-                            ...busValues,
-                            driver_name: driver
-                                ? driver.dataValues.fullname
-                                : '',
-                        }
+            return findAcross('Bus', { school_id: id }, 'Driver').then(
+                buses => {
+                    if (size(buses) > 0) {
+                        const busMap = map(bus => {
+                            const { dataValues: busValues } = bus
+                            const { driver_id } = busValues
+                            return findOne('Driver', { driver_id }).then(
+                                driver => {
+                                    return {
+                                        ...busValues,
+                                        driver_name: driver
+                                            ? driver.dataValues.fullname
+                                            : '',
+                                    }
+                                },
+                            )
+                        })(buses)
+                        return Promise.all(busMap).then(results => {
+                            return res.status(200).json({
+                                status: 200,
+                                data: results,
+                            })
+                        })
+                    } else {
                         return res.status(200).json({
                             status: 200,
-                            data,
+                            data: { message: 'No Bus Found' },
                         })
-                    })
-                } else {
-                    return res.status(200).json({
-                        status: 200,
-                        data: { message: 'No Bus Found' },
-                    })
-                }
-            })
+                    }
+                },
+            )
         }
         return res
             .status(200)
@@ -733,8 +741,9 @@ function studentList(req, res, next) {
                                                     ? grade.dataValues
                                                           .grade_name
                                                     : '',
-                                                shift_name: shift_name
+                                                shift_name: shift
                                                     ? shift.dataValues
+                                                          .shift_name
                                                     : '',
                                                 driver_name: driver
                                                     ? driver.dataValues.fullname
