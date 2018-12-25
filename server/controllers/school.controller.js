@@ -621,9 +621,29 @@ function busList(req, res, next) {
             const { dataValues } = resUser
             const { id, type } = dataValues
 
-            return findAcross('Bus', { school_id: id }, 'Driver').then(bus =>
-                res.status(200).json({ status: 200, data: bus }),
-            )
+            return findAcross('Bus', { school_id: id }, 'Driver').then(bus => {
+                if (bus) {
+                    const { dataValues: busValues } = bus
+                    const { driver_id } = busValues
+                    return findOne('Driver', { driver_id }).then(driver => {
+                        const data = {
+                            ...busValues,
+                            driver_name: driver
+                                ? driver.dataValues.fullname
+                                : '',
+                        }
+                        return res.status(200).json({
+                            status: 200,
+                            data,
+                        })
+                    })
+                } else {
+                    return res.status(200).json({
+                        status: 200,
+                        data: { message: 'No Bus Found' },
+                    })
+                }
+            })
         }
         return res
             .status(200)
@@ -685,7 +705,62 @@ function studentList(req, res, next) {
             const { id, type } = dataValues
             //verify it
             return findAcross('Student', { school_id: id }, 'Parent').then(
-                student => res.status(200).json({ status: 200, data: student }),
+                students => {
+                    if (size(students) > 0) {
+                        const studentMaps = map(student => {
+                            const { dataValues: studentValues } = student
+                            const {
+                                parent_id,
+                                driver_id,
+                                grade: grade_id,
+                                shift: shift_id,
+                            } = studentValues
+                            return findOne('Driver', {
+                                driver_id,
+                            }).then(driver => {
+                                return findOne('Parent', {
+                                    parent_id,
+                                }).then(parent => {
+                                    return findOne('Grade', {
+                                        grade_id,
+                                    }).then(grade => {
+                                        return findOne('Shift', {
+                                            shift_id,
+                                        }).then(shift => {
+                                            return {
+                                                ...studentValues,
+                                                grade_name: grade
+                                                    ? grade.dataValues
+                                                          .grade_name
+                                                    : '',
+                                                shift_name: shift_name
+                                                    ? shift.dataValues
+                                                    : '',
+                                                driver_name: driver
+                                                    ? driver.dataValues.fullname
+                                                    : '',
+                                                parent_name: parent
+                                                    ? parent.dataValues.fullname
+                                                    : '',
+                                            }
+                                        })
+                                    })
+                                })
+                            })
+                        })(students)
+                        return Promise.all(studentMaps).then(result => {
+                            return res.status(200).json({
+                                status: 200,
+                                data: result,
+                            })
+                        })
+                    } else {
+                        return res.status(200).json({
+                            status: 404,
+                            data: { message: 'No Students Found' },
+                        })
+                    }
+                },
             )
         }
         return res
