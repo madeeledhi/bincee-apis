@@ -12,9 +12,8 @@ const router = express.Router() // eslint-disable-line new-cap
 router.route('/list').get(userCtrl.list)
 
 /** POST /api/users - Create new user */
-router
-    .route('/create')
-    .post(validate(paramValidation.createUser), userCtrl.create)
+router.route('/passwordreset').post(userCtrl.resetPassword)
+
 router.route('/list').get(userCtrl.list)
 
 router

@@ -10,6 +10,14 @@ export default {
         },
     },
 
+    passwordreset: {
+        body: {
+            selected_option: Joi.string().required(),
+            username: Joi.string().required(),
+            type: Joi.number().required(),
+        },
+    },
+
     // POST /api/admin
     createSchool: {
         body: {

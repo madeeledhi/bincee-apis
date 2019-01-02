@@ -11,6 +11,7 @@ import {
     createOne,
     destroy,
     update,
+    sendEmail,
 } from '../utils'
 import config from '../../config/config'
 
@@ -40,6 +41,19 @@ function createSchool(req, res, next) {
                         ...school,
                     }).then(savedSchool => {
                         const { dataValues: schoolValues } = savedSchool
+                        const html = `<div><b>username</b> : ${username} </br><b>password</b> : ${password} </div>`
+                        sendEmail(
+                            email,
+                            'Bincee Login Credentials',
+                            'Sign in to bincee using credentials',
+                            html,
+                        )
+                        sendEmail(
+                            email,
+                            'Welcome to Bincee',
+                            'Welcome to Bincee',
+                            '<div><b>Bincee Tracking Application</b></div>',
+                        )
                         return res
                             .status(200)
                             .json({

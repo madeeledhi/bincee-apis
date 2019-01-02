@@ -22,6 +22,7 @@ import {
     update,
     findAcross,
     sendNotification,
+    sendEmail,
 } from '../utils'
 import config from '../../config/config'
 import Announcement from '../models/announcement.model'
@@ -301,6 +302,13 @@ function createParent(req, res, next) {
                                 ...parent,
                             }).then(savedParent => {
                                 const { dataValues: parentValues } = savedParent
+                                const html = `<div><b>username</b> : ${username} </br><b>password</b> : ${password} </div>`
+                                sendEmail(
+                                    email,
+                                    'Bincee Login Credentials',
+                                    'Sign in to bincee using credentials',
+                                    html,
+                                )
                                 return res
                                     .status(200)
                                     .json({
