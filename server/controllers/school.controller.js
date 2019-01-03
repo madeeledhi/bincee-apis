@@ -9,6 +9,8 @@ import size from 'lodash/fp/size'
 import reduce from 'lodash/fp/reduce'
 import keys from 'lodash/fp/keys'
 import filter from 'lodash/fp/filter'
+import isFinite from 'lodash/isFinite'
+import parseInt from 'lodash/parseInt'
 
 // src
 import {
@@ -36,9 +38,13 @@ function createBus(req, res, next) {
                 registration_no,
                 description,
                 driver_id,
-            }).then(bus => {
-                return res.status(200).json({ status: 200, data: bus })
             })
+                .then(bus => {
+                    return res.status(200).json({ status: 200, data: bus })
+                })
+                .catch(e => {
+                    return next(e)
+                })
         }
 
         return res
@@ -67,9 +73,13 @@ function createStudent(req, res, next) {
                 driver_id,
                 status,
                 photo,
-            }).then(student => {
-                return res.status(200).json({ status: 200, data: student })
             })
+                .then(student => {
+                    return res.status(200).json({ status: 200, data: student })
+                })
+                .catch(e => {
+                    return next(e)
+                })
         }
 
         return res
@@ -101,55 +111,62 @@ function createNotification(req, res, next) {
                 type,
                 title,
                 description,
-            }).then(announcement => {
-                if (type === 'school') {
-                    sendNotification(`${type}-${school_id}`, {
-                        title,
-                        description,
-                    })
-                    return res.status(200).json({
-                        status: 200,
-                        data: announcement,
-                    })
-                } else {
-                    const { dataValues } = announcement
-                    const { id: announcement_id } = dataValues
-                    if (size(studentArray) > 0) {
-                        const multiply = map(
-                            ({ student_id, parent_id, fullname }) => {
-                                return createOne('Notify', {
-                                    student_id,
-                                    announcement_id,
-                                }).then(notify => {
-                                    sendNotification(`${type}-${parent_id}`, {
-                                        title,
-                                        student: fullname,
-                                        description,
-                                    })
-                                    return notify
-                                })
-                            },
-                        )(studentArray)
-                        return Promise.all(multiply).then(response =>
-                            res.status(200).json({
-                                status: 200,
-                                data: {
-                                    announcement: dataValues,
-                                    notify: response,
-                                },
-                            }),
-                        )
-                    } else {
+            })
+                .then(announcement => {
+                    if (type === 'school') {
+                        sendNotification(`${type}-${school_id}`, {
+                            title,
+                            description,
+                        })
                         return res.status(200).json({
                             status: 200,
-                            data: {
-                                announcement,
-                                notify: [],
-                            },
+                            data: announcement,
                         })
+                    } else {
+                        const { dataValues } = announcement
+                        const { id: announcement_id } = dataValues
+                        if (size(studentArray) > 0) {
+                            const multiply = map(
+                                ({ student_id, parent_id, fullname }) => {
+                                    return createOne('Notify', {
+                                        student_id,
+                                        announcement_id,
+                                    }).then(notify => {
+                                        sendNotification(
+                                            `${type}-${parent_id}`,
+                                            {
+                                                title,
+                                                student: fullname,
+                                                description,
+                                            },
+                                        )
+                                        return notify
+                                    })
+                                },
+                            )(studentArray)
+                            return Promise.all(multiply).then(response =>
+                                res.status(200).json({
+                                    status: 200,
+                                    data: {
+                                        announcement: dataValues,
+                                        notify: response,
+                                    },
+                                }),
+                            )
+                        } else {
+                            return res.status(200).json({
+                                status: 200,
+                                data: {
+                                    announcement,
+                                    notify: [],
+                                },
+                            })
+                        }
                     }
-                }
-            })
+                })
+                .catch(e => {
+                    return next(e)
+                })
         } else {
             return res
                 .status(200)
@@ -159,10 +176,28 @@ function createNotification(req, res, next) {
 }
 
 function createLeave(req, res, next) {
-    const { from_date, to_date, student_id, comment, school_id } = getOr(
-        {},
-        'body',
-    )(req)
+    const {
+        from_date: from,
+        to_date: to,
+        student_id,
+        comment,
+        school_id,
+    } = getOr({}, 'body')(req)
+
+    const isNumber = flow(
+        parseInt,
+        isFinite,
+    )
+    const getInt = data => (isNumber(data) ? parseInt(data) : '')
+    if (!(typeof getInt(to) === 'number' || typeof getInt(from) === 'number')) {
+        return res.status(200).json({
+            status: 401,
+            data: { message: 'Invalide from/to date' },
+        })
+    }
+    const day = 24 * 60 * 60
+    const from_date = new Date(from * 1000)
+    const to_date = new Date((to + day) * 1000)
     return findOne('Leaves', { from_date, to_date, student_id }).then(
         resLeave => {
             if (!resLeave) {
@@ -172,9 +207,15 @@ function createLeave(req, res, next) {
                     student_id,
                     comment,
                     school_id,
-                }).then(Leave => {
-                    return res.status(200).json({ status: 200, data: Leave })
                 })
+                    .then(Leave => {
+                        return res
+                            .status(200)
+                            .json({ status: 200, data: Leave })
+                    })
+                    .catch(e => {
+                        return next(e)
+                    })
             }
             return res.status(200).json({
                 status: 302,
@@ -240,10 +281,17 @@ function createDriver(req, res, next) {
                         .catch(e => next(e))
                 }
 
-                return res.status(200).json({
-                    status: 302,
-                    data: { message: 'Driver Already Exists' },
-                })
+                return res
+                    .status(200)
+                    .json({
+                        status: 302,
+                        data: {
+                            message: 'Driver Already Exists',
+                        },
+                    })
+                    .catch(e => {
+                        return next(e)
+                    })
             })
         }
         return res
@@ -352,25 +400,31 @@ function createGrade(req, res, next) {
             const { dataValues } = resUser
             const { id, type } = dataValues
             const grade_section = `${grade_name + section}`
-            return findOne('Grade', { grade_name, section }).then(resGrade => {
-                if (!resGrade) {
-                    return createOne('Grade', {
-                        grade_name,
-                        section,
-                        grade_section,
-                        school_id: id,
-                    }).then(grade => {
-                        return res
-                            .status(200)
-                            .json({ status: 200, data: grade })
-                    })
-                }
+            return findOne('Grade', { grade_name, section })
+                .then(resGrade => {
+                    if (!resGrade) {
+                        return createOne('Grade', {
+                            grade_name,
+                            section,
+                            grade_section,
+                            school_id: id,
+                        }).then(grade => {
+                            return res
+                                .status(200)
+                                .json({ status: 200, data: grade })
+                        })
+                    }
 
-                return res.status(200).json({
-                    status: 302,
-                    data: { message: 'Grade Already Exists' },
+                    return res.status(200).json({
+                        status: 302,
+                        data: {
+                            message: 'Grade Already Exists',
+                        },
+                    })
                 })
-            })
+                .catch(e => {
+                    return next(e)
+                })
         }
         return res
             .status(200)
@@ -393,25 +447,31 @@ function createShift(req, res, next) {
                 start_time,
                 end_time,
                 school_id: id,
-            }).then(resShift => {
-                if (!resShift) {
-                    return createOne('Shift', {
-                        shift_name,
-                        start_time,
-                        end_time,
-                        school_id: id,
-                    }).then(shift => {
-                        return res
-                            .status(200)
-                            .json({ status: 200, data: shift })
-                    })
-                }
-
-                return res.status(200).json({
-                    status: 302,
-                    data: { message: 'Shift Already Exists' },
-                })
             })
+                .then(resShift => {
+                    if (!resShift) {
+                        return createOne('Shift', {
+                            shift_name,
+                            start_time,
+                            end_time,
+                            school_id: id,
+                        }).then(shift => {
+                            return res
+                                .status(200)
+                                .json({ status: 200, data: shift })
+                        })
+                    }
+
+                    return res.status(200).json({
+                        status: 302,
+                        data: {
+                            message: 'Shift Already Exists',
+                        },
+                    })
+                })
+                .catch(e => {
+                    return next(e)
+                })
         }
         return res
             .status(200)
@@ -432,11 +492,15 @@ function deleteBus(req, res, next) {
 }
 function deleteLeave(req, res, next) {
     const { id } = getOr({}, 'params')(req)
-    return destroy('Leaves', { id }).then(() =>
-        res
-            .status(200)
-            .json({ status: 200, data: { message: 'Leave Deleted' } }),
-    )
+    return destroy('Leaves', { id })
+        .then(() =>
+            res
+                .status(200)
+                .json({ status: 200, data: { message: 'Leave Deleted' } }),
+        )
+        .catch(e => {
+            return next(e)
+        })
 }
 function deleteShift(req, res, next) {
     const { id } = getOr({}, 'params')(req)
@@ -509,9 +573,11 @@ function deleteParent(req, res, next) {
 function updateBus(req, res, next) {
     const newData = getOr({}, 'body')(req)
     const { id } = getOr({}, 'params')(req)
-    return update('Bus', { id }, newData).then(bus =>
-        res.status(200).json({ status: 200, data: bus }),
-    )
+    return update('Bus', { id }, newData)
+        .then(bus => res.status(200).json({ status: 200, data: bus }))
+        .catch(e => {
+            return next(e)
+        })
 }
 
 function updateLeave(req, res, next) {
@@ -524,96 +590,126 @@ function updateLeave(req, res, next) {
 function updateAnnouncement(req, res, next) {
     const newData = getOr({}, 'body')(req)
     const { id } = getOr({}, 'params')(req)
-    return update('Announcement', { id }, newData).then(announcement =>
-        res.status(200).json({ status: 200, data: announcement }),
-    )
+    return update('Announcement', { id }, newData)
+        .then(announcement =>
+            res.status(200).json({ status: 200, data: announcement }),
+        )
+        .catch(e => {
+            return next(e)
+        })
 }
 function updateGrade(req, res, next) {
     const newData = getOr({}, 'body')(req)
     const { id } = getOr({}, 'params')(req)
-    return update('Grade', { grade_id: id }, newData).then(grade =>
-        res.status(200).json({ status: 200, data: grade }),
-    )
+    return update('Grade', { grade_id: id }, newData)
+        .then(grade => res.status(200).json({ status: 200, data: grade }))
+        .catch(e => {
+            return next(e)
+        })
 }
 function updateShift(req, res, next) {
     const newData = getOr({}, 'body')(req)
     const { id } = getOr({}, 'params')(req)
-    return update('Shift', { shift_id: id }, newData).then(shift =>
-        res.status(200).json({ status: 200, data: shift }),
-    )
+    return update('Shift', { shift_id: id }, newData)
+        .then(shift => res.status(200).json({ status: 200, data: shift }))
+        .catch(e => {
+            return next(e)
+        })
 }
 function updateStudent(req, res, next) {
     const newData = getOr({}, 'body')(req)
     const { id } = getOr({}, 'params')(req)
-    return update('Student', { id }, newData).then(student =>
-        res.status(200).json({ status: 200, data: student }),
-    )
+    return update('Student', { id }, newData)
+        .then(student => res.status(200).json({ status: 200, data: student }))
+        .catch(e => {
+            return next(e)
+        })
 }
 function updateDriver(req, res, next) {
     const newData = getOr({}, 'body')(req)
     const { id } = getOr({}, 'params')(req)
-    return update('Driver', { driver_id: id }, newData).then(driver =>
-        res.status(200).json({ status: 200, data: driver }),
-    )
+    return update('Driver', { driver_id: id }, newData)
+        .then(driver => res.status(200).json({ status: 200, data: driver }))
+        .catch(e => {
+            return next(e)
+        })
 }
 function updateParent(req, res, next) {
     const newData = getOr({}, 'body')(req)
     const { id } = getOr({}, 'params')(req)
-    return update('Parent', { parent_id: id }, newData).then(parent =>
-        res.status(200).json({ status: 200, data: parent }),
-    )
+    return update('Parent', { parent_id: id }, newData)
+        .then(parent => res.status(200).json({ status: 200, data: parent }))
+        .catch(e => {
+            return next(e)
+        })
 }
 
 //Get funtions
 function getBus(req, res, next) {
     const { id } = getOr({}, 'params')(req)
-    return findOne('Bus', { id }).then(bus =>
-        res.status(200).json({ status: 200, data: bus }),
-    )
+    return findOne('Bus', { id })
+        .then(bus => res.status(200).json({ status: 200, data: bus }))
+        .catch(e => {
+            return next(e)
+        })
 }
 function getLeave(req, res, next) {
     const { id } = getOr({}, 'params')(req)
-    return findOne('Leaves', { id }).then(leave =>
-        res.status(200).json({ status: 200, data: leave }),
-    )
+    return findOne('Leaves', { id })
+        .then(leave => res.status(200).json({ status: 200, data: leave }))
+        .catch(e => {
+            return next(e)
+        })
 }
 function getAnnouncement(req, res, next) {
     const { id } = getOr({}, 'params')(req)
-    return findOne('Announcement', {
-        id,
-    }).then(announcement =>
-        res.status(200).json({ status: 200, data: announcement }),
-    )
+    return findOne('Announcement', { id })
+        .then(announcement =>
+            res.status(200).json({ status: 200, data: announcement }),
+        )
+        .catch(e => {
+            return next(e)
+        })
 }
 function getShift(req, res, next) {
     const { id } = getOr({}, 'params')(req)
-    return findOne('Shift', { shift_id: id }).then(shift =>
-        res.status(200).json({ status: 200, data: shift }),
-    )
+    return findOne('Shift', { shift_id: id })
+        .then(shift => res.status(200).json({ status: 200, data: shift }))
+        .catch(e => {
+            return next(e)
+        })
 }
 function getGrade(req, res, next) {
     const { id } = getOr({}, 'params')(req)
-    return findOne('Grade', {
-        grade_id: id,
-    }).then(grade => res.status(200).json({ status: 200, data: grade }))
+    return findOne('Grade', { grade_id: id })
+        .then(grade => res.status(200).json({ status: 200, data: grade }))
+        .catch(e => {
+            return next(e)
+        })
 }
 function getStudent(req, res, next) {
     const { id } = getOr({}, 'params')(req)
-    return findOne('Student', { id }).then(student =>
-        res.status(200).json({ status: 200, data: student }),
-    )
+    return findOne('Student', { id })
+        .then(student => res.status(200).json({ status: 200, data: student }))
+        .catch(e => {
+            return next(e)
+        })
 }
 function getDriver(req, res, next) {
     const { id } = getOr({}, 'params')(req)
-    return findOne('Driver', {
-        driver_id: id,
-    }).then(driver => res.status(200).json({ status: 200, data: driver }))
+    return findOne('Driver', { driver_id: id })
+        .then(driver => res.status(200).json({ status: 200, data: driver }))
+        .catch(e => {
+            return next(e)
+        })
 }
 function getParent(req, res, next) {
     const { id } = getOr({}, 'params')(req)
-    return findOne('Parent', {
-        parent_id: id,
-    }).then(parent => res.status(200).json({ status: 200, data: parent }))
+    return findOne('Parent', { parent_id: id })
+        .then(parent => res.status(200).json({ status: 200, data: parent }))
+        .catch(e => {
+            return next(e)
+        })
 }
 
 //getList funtions
@@ -624,47 +720,51 @@ function busList(req, res, next) {
         splitted => splitted[1],
     )(authorization)
 
-    return findOne('User', { token }).then(resUser => {
-        if (resUser) {
-            const { dataValues } = resUser
-            const { id, type } = dataValues
+    return findOne('User', { token })
+        .then(resUser => {
+            if (resUser) {
+                const { dataValues } = resUser
+                const { id, type } = dataValues
 
-            return findAcross('Bus', { school_id: id }, 'Driver').then(
-                buses => {
-                    if (size(buses) > 0) {
-                        const busMap = map(bus => {
-                            const { dataValues: busValues } = bus
-                            const { driver_id } = busValues
-                            return findOne('Driver', { driver_id }).then(
-                                driver => {
+                return findAcross('Bus', { school_id: id }, 'Driver').then(
+                    buses => {
+                        if (size(buses) > 0) {
+                            const busMap = map(bus => {
+                                const { dataValues: busValues } = bus
+                                const { driver_id } = busValues
+                                return findOne('Driver', {
+                                    driver_id,
+                                }).then(driver => {
                                     return {
                                         ...busValues,
                                         driver_name: driver
                                             ? driver.dataValues.fullname
                                             : '',
                                     }
-                                },
-                            )
-                        })(buses)
-                        return Promise.all(busMap).then(results => {
-                            return res.status(200).json({
-                                status: 200,
-                                data: results,
+                                })
+                            })(buses)
+                            return Promise.all(busMap).then(results => {
+                                return res.status(200).json({
+                                    status: 200,
+                                    data: results,
+                                })
                             })
-                        })
-                    } else {
-                        return res.status(200).json({
-                            status: 404,
-                            data: { message: 'No Bus Found' },
-                        })
-                    }
-                },
-            )
-        }
-        return res
-            .status(200)
-            .json({ status: 404, data: { message: 'No Buses Found' } })
-    })
+                        } else {
+                            return res.status(200).json({
+                                status: 404,
+                                data: { message: 'No Bus Found' },
+                            })
+                        }
+                    },
+                )
+            }
+            return res
+                .status(200)
+                .json({ status: 404, data: { message: 'No Buses Found' } })
+        })
+        .catch(e => {
+            return next(e)
+        })
 }
 function gradeList(req, res, next) {
     const { authorization } = getOr({}, 'headers')(req)
@@ -673,19 +773,25 @@ function gradeList(req, res, next) {
         splitted => splitted[1],
     )(authorization)
 
-    return findOne('User', { token }).then(resUser => {
-        if (resUser) {
-            const { dataValues } = resUser
-            const { id, type } = dataValues
+    return findOne('User', { token })
+        .then(resUser => {
+            if (resUser) {
+                const { dataValues } = resUser
+                const { id, type } = dataValues
 
-            return findAcross('Grade', { school_id: id }).then(grade =>
-                res.status(200).json({ status: 200, data: grade }),
-            )
-        }
-        return res
-            .status(200)
-            .json({ status: 404, data: { message: 'No Grades Found' } })
-    })
+                return findAcross('Grade', {
+                    school_id: id,
+                }).then(grade =>
+                    res.status(200).json({ status: 200, data: grade }),
+                )
+            }
+            return res
+                .status(200)
+                .json({ status: 404, data: { message: 'No Grades Found' } })
+        })
+        .catch(e => {
+            return next(e)
+        })
 }
 function shiftList(req, res, next) {
     const { authorization } = getOr({}, 'headers')(req)
@@ -694,19 +800,25 @@ function shiftList(req, res, next) {
         splitted => splitted[1],
     )(authorization)
 
-    return findOne('User', { token }).then(resUser => {
-        if (resUser) {
-            const { dataValues } = resUser
-            const { id, type } = dataValues
+    return findOne('User', { token })
+        .then(resUser => {
+            if (resUser) {
+                const { dataValues } = resUser
+                const { id, type } = dataValues
 
-            return findAcross('Shift', { school_id: id }).then(shift =>
-                res.status(200).json({ status: 200, data: shift }),
-            )
-        }
-        return res
-            .status(200)
-            .json({ status: 404, data: { message: 'No Shifts Found' } })
-    })
+                return findAcross('Shift', {
+                    school_id: id,
+                }).then(shift =>
+                    res.status(200).json({ status: 200, data: shift }),
+                )
+            }
+            return res
+                .status(200)
+                .json({ status: 404, data: { message: 'No Shifts Found' } })
+        })
+        .catch(e => {
+            return next(e)
+        })
 }
 function studentList(req, res, next) {
     const { authorization } = getOr({}, 'headers')(req)
@@ -715,148 +827,163 @@ function studentList(req, res, next) {
         splitted => splitted[1],
     )(authorization)
 
-    return findOne('User', { token }).then(resUser => {
-        if (resUser) {
-            const { dataValues } = resUser
-            const { id, type } = dataValues
-            //verify it
-            return findAcross('Student', { school_id: id }, 'Parent').then(
-                students => {
-                    if (size(students) > 0) {
-                        const studentMaps = map(student => {
-                            const { dataValues: studentValues } = student
-                            const {
-                                parent_id,
-                                driver_id,
-                                grade: grade_id,
-                                shift: shift_id,
-                            } = studentValues
-                            return findOne('Driver', {
-                                driver_id,
-                            }).then(driver => {
-                                return findOne('Parent', {
+    return findOne('User', { token })
+        .then(resUser => {
+            if (resUser) {
+                const { dataValues } = resUser
+                const { id, type } = dataValues
+                //verify it
+                return findAcross('Student', { school_id: id }, 'Parent').then(
+                    students => {
+                        if (size(students) > 0) {
+                            const studentMaps = map(student => {
+                                const { dataValues: studentValues } = student
+                                const {
                                     parent_id,
-                                }).then(parent => {
-                                    return findOne('Grade', {
-                                        grade_id,
-                                    }).then(grade => {
-                                        return findOne('Shift', {
-                                            shift_id,
-                                        }).then(shift => {
-                                            return {
-                                                ...studentValues,
-                                                grade_name: grade
-                                                    ? grade.dataValues
-                                                          .grade_section
-                                                    : '',
-                                                shift_name: shift
-                                                    ? shift.dataValues
-                                                          .shift_name
-                                                    : '',
-                                                driver_name: driver
-                                                    ? driver.dataValues.fullname
-                                                    : '',
-                                                parent_name: parent
-                                                    ? parent.dataValues.fullname
-                                                    : '',
-                                            }
+                                    driver_id,
+                                    grade: grade_id,
+                                    shift: shift_id,
+                                } = studentValues
+                                return findOne('Driver', {
+                                    driver_id,
+                                }).then(driver => {
+                                    return findOne('Parent', {
+                                        parent_id,
+                                    }).then(parent => {
+                                        return findOne('Grade', {
+                                            grade_id,
+                                        }).then(grade => {
+                                            return findOne('Shift', {
+                                                shift_id,
+                                            }).then(shift => {
+                                                return {
+                                                    ...studentValues,
+                                                    grade_name: grade
+                                                        ? grade.dataValues
+                                                              .grade_section
+                                                        : '',
+                                                    shift_name: shift
+                                                        ? shift.dataValues
+                                                              .shift_name
+                                                        : '',
+                                                    driver_name: driver
+                                                        ? driver.dataValues
+                                                              .fullname
+                                                        : '',
+                                                    parent_name: parent
+                                                        ? parent.dataValues
+                                                              .fullname
+                                                        : '',
+                                                }
+                                            })
                                         })
                                     })
                                 })
+                            })(students)
+                            return Promise.all(studentMaps).then(result => {
+                                return res.status(200).json({
+                                    status: 200,
+                                    data: result,
+                                })
                             })
-                        })(students)
-                        return Promise.all(studentMaps).then(result => {
+                        } else {
                             return res.status(200).json({
-                                status: 200,
-                                data: result,
+                                status: 404,
+                                data: { message: 'No Students Found' },
                             })
-                        })
-                    } else {
-                        return res.status(200).json({
-                            status: 404,
-                            data: { message: 'No Students Found' },
-                        })
-                    }
-                },
-            )
-        }
-        return res
-            .status(200)
-            .json({ status: 404, data: { message: 'No Students Found' } })
-    })
+                        }
+                    },
+                )
+            }
+            return res.status(200).json({
+                status: 404,
+                data: { message: 'No Students Found' },
+            })
+        })
+        .catch(e => {
+            return next(e)
+        })
 }
 function driverBusList(req, res, next) {
     const { id } = getOr({}, 'params')(req)
-    return findOne('Driver', { driver_id: id }).then(driver => {
-        if (driver) {
-            const { dataValues: driverValues } = driver
-            return findOne('Bus', { driver_id: id }).then(bus => {
-                if (bus) {
-                    const { dataValues: busValues } = bus
-                    const data = { ...driverValues, bus: busValues }
-                    return res.status(200).json({ status: 200, data })
-                } else {
-                    const data = { ...driverValues, bus: {} }
-                    return res.status(200).json({ status: 200, data })
-                }
-            })
-        } else {
-            return res
-                .status(200)
-                .json({ status: 404, data: { message: 'No Driver Exists' } })
-        }
-    })
+    return findOne('Driver', { driver_id: id })
+        .then(driver => {
+            if (driver) {
+                const { dataValues: driverValues } = driver
+                return findOne('Bus', { driver_id: id }).then(bus => {
+                    if (bus) {
+                        const { dataValues: busValues } = bus
+                        const data = { ...driverValues, bus: busValues }
+                        return res.status(200).json({ status: 200, data })
+                    } else {
+                        const data = { ...driverValues, bus: {} }
+                        return res.status(200).json({ status: 200, data })
+                    }
+                })
+            } else {
+                return res.status(200).json({
+                    status: 404,
+                    data: { message: 'No Driver Exists' },
+                })
+            }
+        })
+        .catch(e => {
+            return next(e)
+        })
 }
 function studentNotificationList(req, res, next) {
     const { id } = getOr({}, 'params')(req)
 
-    return findAcross('Announcement', { student_id: id }, 'Notify').then(
-        announcements =>
+    return findAcross('Announcement', { student_id: id }, 'Notify')
+        .then(announcements =>
             res.status(200).json({ status: 200, data: announcements }),
-    )
+        )
+        .catch(e => {
+            return next(e)
+        })
 }
 function schoolNotificationList(req, res, next) {
     const { id } = getOr({}, 'params')(req)
-    return findMultiple('Announcement', {
-        school_id: id,
-        type: 'school',
-    }).then(announcements =>
-        res.status(200).json({ status: 200, data: announcements }),
-    )
+    return findMultiple('Announcement', { school_id: id, type: 'school' })
+        .then(announcements =>
+            res.status(200).json({ status: 200, data: announcements }),
+        )
+        .catch(e => {
+            return next(e)
+        })
 }
 
 function parentStudentNotifications(req, res, next) {
     const { id } = getOr({}, 'params')(req)
-    return findMultiple('Student', {
-        parent_id: id,
-    }).then(students => {
-        if (size(students) > 0) {
-            const notifications = map(student => {
-                const { dataValues: studentValues } = student
-                const { id: student_id } = studentValues
-                return findAcross(
-                    'Announcement',
-                    { student_id },
-                    'Notify',
-                ).then(announcements => {
-                    return { [student_id]: announcements }
-                })
-            })(students)
+    return findMultiple('Student', { parent_id: id })
+        .then(students => {
+            if (size(students) > 0) {
+                const notifications = map(student => {
+                    const { dataValues: studentValues } = student
+                    const { id: student_id } = studentValues
+                    return findAcross(
+                        'Announcement',
+                        { student_id },
+                        'Notify',
+                    ).then(announcements => {
+                        return { [student_id]: announcements }
+                    })
+                })(students)
 
-            return Promise.all(notifications).then(response => {
-                const results = reduce((final, current) => {
-                    const [key] = keys(current)
-                    return {
-                        ...final,
-                        [key]: current[key],
-                    }
-                }, {})(response)
-                return res.status(200).json({ status: 200, data: results })
-            })
-        } else {
-            return res.status(200).json({ status: 200, data: [] })
-        }
-    })
+                return Promise.all(notifications).then(response => {
+                    const results = reduce((final, current) => {
+                        const [key] = keys(current)
+                        return { ...final, [key]: current[key] }
+                    }, {})(response)
+                    return res.status(200).json({ status: 200, data: results })
+                })
+            } else {
+                return res.status(200).json({ status: 200, data: [] })
+            }
+        })
+        .catch(e => {
+            return next(e)
+        })
 }
 
 function notificationList(req, res, next) {
@@ -866,27 +993,33 @@ function notificationList(req, res, next) {
         splitted => splitted[1],
     )(authorization)
 
-    return findOne('User', { token }).then(resUser => {
-        if (resUser) {
-            const { dataValues } = resUser
-            const { id } = dataValues
-            return findMultiple('Announcement', {
-                school_id: id,
-            }).then(announcements =>
-                res.status(200).json({ status: 200, data: announcements }),
-            )
-        }
-        return res.status(200).json({
-            status: 404,
-            data: { message: 'No Announcements Founds' },
+    return findOne('User', { token })
+        .then(resUser => {
+            if (resUser) {
+                const { dataValues } = resUser
+                const { id } = dataValues
+                return findMultiple('Announcement', {
+                    school_id: id,
+                }).then(announcements =>
+                    res.status(200).json({ status: 200, data: announcements }),
+                )
+            }
+            return res.status(200).json({
+                status: 404,
+                data: { message: 'No Announcements Founds' },
+            })
         })
-    })
+        .catch(e => {
+            return next(e)
+        })
 }
 function studentLeaveList(req, res, next) {
     const { id } = getOr({}, 'params')(req)
-    return findMultiple('Leaves', { student_id: id }).then(leave =>
-        res.status(200).json({ status: 200, data: leave }),
-    )
+    return findMultiple('Leaves', { student_id: id })
+        .then(leave => res.status(200).json({ status: 200, data: leave }))
+        .catch(e => {
+            return next(e)
+        })
 }
 function leavesList(req, res, next) {
     const { authorization } = getOr({}, 'headers')(req)
@@ -895,65 +1028,80 @@ function leavesList(req, res, next) {
         splitted => splitted[1],
     )(authorization)
 
-    return findOne('User', { token }).then(resUser => {
-        if (resUser) {
-            const { dataValues } = resUser
-            const { id } = dataValues
+    return findOne('User', { token })
+        .then(resUser => {
+            if (resUser) {
+                const { dataValues } = resUser
+                const { id } = dataValues
 
-            return listAll('Leaves').then(leaves => {
-                if (size(leaves) > 0) {
-                    const filteredLeaves = map(leave => {
-                        const { dataValues: leaveValues } = leave
-                        const { student_id, id: leave_id } = leaveValues
-                        return findOne('Student', {
-                            id: student_id,
-                        }).then(student => {
-                            if (student) {
-                                const { dataValues: studentValues } = student
-                                const { parent_id } = studentValues
-                                return findOne('Parent', {
-                                    parent_id,
-                                    school_id: id,
-                                }).then(parent => {
-                                    if (parent) {
-                                        return {
-                                            ...leaveValues,
-                                            ...studentValues,
-                                            id: leave_id,
-                                            found: true,
-                                        }
+                return listAll('Leaves')
+                    .then(leaves => {
+                        if (size(leaves) > 0) {
+                            const filteredLeaves = map(leave => {
+                                const { dataValues: leaveValues } = leave
+                                const { student_id, id: leave_id } = leaveValues
+                                return findOne('Student', {
+                                    id: student_id,
+                                }).then(student => {
+                                    if (student) {
+                                        const {
+                                            dataValues: studentValues,
+                                        } = student
+                                        const { parent_id } = studentValues
+                                        return findOne('Parent', {
+                                            parent_id,
+                                            school_id: id,
+                                        }).then(parent => {
+                                            if (parent) {
+                                                return {
+                                                    ...leaveValues,
+                                                    ...studentValues,
+                                                    id: leave_id,
+                                                    found: true,
+                                                }
+                                            } else {
+                                                return {
+                                                    ...leaveValues,
+                                                    found: false,
+                                                }
+                                            }
+                                        })
                                     } else {
                                         return { ...leaveValues, found: false }
                                     }
                                 })
-                            } else {
-                                return {
-                                    ...leaveValues,
-                                    found: false,
-                                }
-                            }
-                        })
-                    })(leaves)
+                            })(leaves)
 
-                    return Promise.all(filteredLeaves).then(response => {
-                        const filteredResponse = filter(
-                            ({ found }) => found === true,
-                        )(response)
-                        return res
-                            .status(200)
-                            .json({ status: 200, data: filteredResponse })
+                            return Promise.all(filteredLeaves).then(
+                                response => {
+                                    const filteredResponse = filter(
+                                        ({ found }) => found === true,
+                                    )(response)
+                                    return res.status(200).json({
+                                        status: 200,
+                                        data: filteredResponse,
+                                    })
+                                },
+                            )
+                        } else {
+                            return res
+                                .status(200)
+                                .json({ status: 200, data: [] })
+                        }
                     })
-                } else {
-                    return res.status(200).json({ status: 200, data: [] })
-                }
-            })
-        } else {
-            return res.status(200).json({
-                status: 404,
-                data: { message: 'No Leaves Found' },
-            })
-        }
-    })
+                    .catch(e => {
+                        return next(e)
+                    })
+            } else {
+                return res.status(200).json({
+                    status: 404,
+                    data: { message: 'No Leaves Found' },
+                })
+            }
+        })
+        .catch(e => {
+            return next(e)
+        })
 }
 
 function parentStudentList(req, res, next) {
@@ -969,22 +1117,31 @@ function driverList(req, res, next) {
         splitted => splitted[1],
     )(authorization)
 
-    return findOne('User', { token }).then(resUser => {
-        if (resUser) {
-            const { dataValues } = resUser
-            const { id } = dataValues
-            return findMultiple('Driver', {
-                school_id: id,
-            }).then(driver =>
-                res.status(200).json({ status: 200, data: driver }),
-            )
-        } else {
-            return res.status(200).json({
-                status: 404,
-                data: { message: 'No Driver Accounts Found' },
-            })
-        }
-    })
+    return findOne('User', { token })
+        .then(resUser => {
+            if (resUser) {
+                const { dataValues } = resUser
+                const { id } = dataValues
+                return findMultiple('Driver', { school_id: id })
+                    .then(driver =>
+                        res.status(200).json({
+                            status: 200,
+                            data: driver,
+                        }),
+                    )
+                    .catch(e => {
+                        return next(e)
+                    })
+            } else {
+                return res.status(200).json({
+                    status: 404,
+                    data: { message: 'No Driver Accounts Found' },
+                })
+            }
+        })
+        .catch(e => {
+            return next(e)
+        })
 }
 
 function parentList(req, res, next) {
@@ -994,21 +1151,27 @@ function parentList(req, res, next) {
         splitted => splitted[1],
     )(authorization)
 
-    return findOne('User', { token }).then(resUser => {
-        if (resUser) {
-            const { dataValues } = resUser
-            const { id } = dataValues
-            return findMultiple('Parent', {
-                school_id: id,
-            }).then(parent =>
-                res.status(200).json({ status: 200, data: parent }),
-            )
-        }
-        return res.status(200).json({
-            status: 404,
-            data: { message: 'No Parents Accounts Founds' },
+    return findOne('User', { token })
+        .then(resUser => {
+            if (resUser) {
+                const { dataValues } = resUser
+                const { id } = dataValues
+                return findMultiple('Parent', { school_id: id })
+                    .then(parent =>
+                        res.status(200).json({ status: 200, data: parent }),
+                    )
+                    .catch(e => {
+                        return next(e)
+                    })
+            }
+            return res.status(200).json({
+                status: 404,
+                data: { message: 'No Parents Accounts Founds' },
+            })
         })
-    })
+        .catch(e => {
+            return next(e)
+        })
 }
 
 export default {

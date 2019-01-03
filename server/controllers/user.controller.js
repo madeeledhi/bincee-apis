@@ -115,12 +115,12 @@ function resetPassword(req, res, next) {
                     if (details) {
                         const password = 'Changeme.1'
                         const html = `<div><b>username</b> : ${username} </br><b>password</b> : ${password} </div>`
-                        sendEmail(
-                            email,
-                            'Password Reset Successfully',
-                            'Sign in to bincee using credentials',
-                            html,
-                        )
+                        // sendEmail(
+                        //     email,
+                        //     'Password Reset Successfully',
+                        //     'Sign in to bincee using credentials',
+                        //     html,
+                        // )
                         return update('User', { id }, { password }).then(user =>
                             res.status(200).json({
                                 status: 200,

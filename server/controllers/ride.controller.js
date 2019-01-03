@@ -79,57 +79,64 @@ async function rideCreation(
 function createRide(req, res) {
     const { driver_id, shift } = getOr({}, 'body')(req)
     //  Return students for current driver and return pickup or dropoff for current shift
-    return findMultiple('Student', { driver_id, shift }).then(students => {
-        if (size(students) > 0) {
-            const filteredStudents = flow(
-                filter(student => {
-                    const { dataValues: studentValues } = student
-                    const { status } = studentValues
-                    return toLower(status) === 'active'
-                }),
-                map(filteredStudent => {
-                    const {
-                        id,
-                        fullname,
-                        grade,
-                        photo,
-                        shift,
-                        parent_id,
-                    } = filteredStudent
-                    return findOne('Parent', { parent_id }).then(parent => {
-                        const { dataValues: parentValues } = parent
+    return findMultiple('Student', { driver_id, shift })
+        .then(students => {
+            if (size(students) > 0) {
+                const filteredStudents = flow(
+                    filter(student => {
+                        const { dataValues: studentValues } = student
+                        const { status } = studentValues
+                        return toLower(status) === 'active'
+                    }),
+                    map(filteredStudent => {
                         const {
-                            fullname,
-                            phone_no,
-                            address,
-                            lat,
-                            lng,
-                            email,
-                        } = parentValues
-                        return {
                             id,
                             fullname,
                             grade,
                             photo,
                             shift,
-                            parentname: fullname,
-                            phone_no,
-                            address,
-                            lat,
-                            lng,
-                            email,
-                        }
-                    })
-                }),
-            )(students)
-            return Promise.all(filteredStudents).then(response =>
-                res.status(200).json({ status: 200, data: response }),
-            )
-        }
-        return res
-            .status(200)
-            .json({ status: 404, data: { message: 'No students Registered' } })
-    })
+                            parent_id,
+                        } = filteredStudent
+                        return findOne('Parent', {
+                            parent_id,
+                        }).then(parent => {
+                            const { dataValues: parentValues } = parent
+                            const {
+                                fullname,
+                                phone_no,
+                                address,
+                                lat,
+                                lng,
+                                email,
+                            } = parentValues
+                            return {
+                                id,
+                                fullname,
+                                grade,
+                                photo,
+                                shift,
+                                parentname: fullname,
+                                phone_no,
+                                address,
+                                lat,
+                                lng,
+                                email,
+                            }
+                        })
+                    }),
+                )(students)
+                return Promise.all(filteredStudents).then(response =>
+                    res.status(200).json({ status: 200, data: response }),
+                )
+            }
+            return res.status(200).json({
+                status: 404,
+                data: { message: 'No students Registered' },
+            })
+        })
+        .catch(e => {
+            return next(e)
+        })
 }
 
 function startRide(req, res) {

@@ -30,11 +30,11 @@ export default {
     },
     createLeave: {
         body: {
-            from_date: Joi.string().required(),
-            to_date: Joi.string().required(),
-            comment: Joi.string().required(),
-            student_id: Joi.number().required(),
-            school_id: Joi.number().required(),
+            // from_date: Joi.string().required(),
+            // to_date: Joi.string().required(),
+            // comment: Joi.string().required(),
+            // student_id: Joi.number().required(),
+            // school_id: Joi.number().required(),
         },
     },
     createNotification: {
