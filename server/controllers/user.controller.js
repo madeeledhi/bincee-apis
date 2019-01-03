@@ -13,6 +13,7 @@ import {
     createOne,
     update,
     destroy,
+    sendEmail,
 } from '../utils'
 import config from '../../config/config'
 
@@ -73,13 +74,103 @@ function create(req, res, next) {
 }
 
 function updateUser(req, res, next) {
-    const { username, password } = getOr({}, 'body')(req)
+    const { username, password, new_password } = getOr({}, 'body')(req)
     const { id } = getOr({}, 'params')(req)
-    return update(
-        'User',
-        { id },
-        username && password ? { username, password } : {},
-    ).then(user => res.status(200).json({ status: 200, data: user }))
+    if (username && password && new_password) {
+        return findOne('User', { username, password }).then(user => {
+            if (user) {
+                return update(
+                    'User',
+                    { id },
+                    { username, password: new_password },
+                ).then(user =>
+                    res.status(200).json({ status: 200, data: user }),
+                )
+            } else {
+                return res
+                    .status(200)
+                    .json({ status: 404, message: 'Invalid Username/Password' })
+            }
+        })
+    } else {
+        return res.status(200).json({
+            status: 404,
+            message: 'Invalid Username/Password',
+        })
+    }
+}
+
+function resetPassword(req, res, next) {
+    const { username, selected_option, email, phone_no, type } = getOr(
+        {},
+        'body',
+    )(req)
+    return findOne('User', { username }).then(user => {
+        if (user) {
+            const { dataValues } = user
+            const { id } = dataValues
+
+            if (selected_option === 'email') {
+                return findOne(type, { email }).then(details => {
+                    if (details) {
+                        const password = 'Changeme.1'
+                        const html = `<div><b>username</b> : ${username} </br><b>password</b> : ${password} </div>`
+                        // sendEmail(
+                        //     email,
+                        //     'Password Reset Successfully',
+                        //     'Sign in to bincee using credentials',
+                        //     html,
+                        // )
+                        return update('User', { id }, { password }).then(user =>
+                            res.status(200).json({
+                                status: 200,
+                                data: {
+                                    message:
+                                        'Credentials have been reset and send to your email',
+                                },
+                            }),
+                        )
+                    } else {
+                        return res.status(200).json({
+                            status: 404,
+                            message: 'Invalid Email',
+                        })
+                    }
+                })
+            } else {
+                return findOne(type, { phone_no }).then(details => {
+                    if (details) {
+                        const password = 'Changeme.1'
+                        // const html = `<div><b>username</b> : ${username} </br><b>password</b> : ${password} </div>`
+                        // sendEmail(
+                        //     email,
+                        //     'Password Reset Successfully',
+                        //     'Sign in to bincee using credentials',
+                        //     html,
+                        // )
+                        return update('User', { id }, { password }).then(user =>
+                            res.status(200).json({
+                                status: 200,
+                                data: {
+                                    message:
+                                        'Credentials have been reset and send to your Phone Number',
+                                },
+                            }),
+                        )
+                    } else {
+                        return res.status(200).json({
+                            status: 404,
+                            message: 'Invalid Phone Number',
+                        })
+                    }
+                })
+            }
+        } else {
+            return res
+                .status(200)
+                .json({ status: 404, message: 'Invalid Username' })
+        }
+    })
 }
 
 /**
@@ -130,6 +221,7 @@ function removeUserById(req, res, next) {
 }
 
 export default {
+    resetPassword,
     getUserById,
     getUserByUsername,
     create,

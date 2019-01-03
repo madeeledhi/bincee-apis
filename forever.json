@@ -1,0 +1,7 @@
+{
+    "uid": "apis",
+    "append": true,
+    "watch": true,
+    "script": "dist/index.js",
+    "command": "node"
+}

@@ -10,6 +10,14 @@ export default {
         },
     },
 
+    passwordreset: {
+        body: {
+            selected_option: Joi.string().required(),
+            username: Joi.string().required(),
+            type: Joi.number().required(),
+        },
+    },
+
     // POST /api/admin
     createSchool: {
         body: {
@@ -22,15 +30,15 @@ export default {
     },
     createLeave: {
         body: {
-            from_date: Joi.string().required(),
-            to_date: Joi.string().required(),
-            student_id: Joi.number().required(),
+            // from_date: Joi.string().required(),
+            // to_date: Joi.string().required(),
+            // comment: Joi.string().required(),
+            // student_id: Joi.number().required(),
+            // school_id: Joi.number().required(),
         },
     },
     createNotification: {
         body: {
-            studentArray: Joi.array().required(),
-            last_updated: Joi.string().required(),
             description: Joi.string().required(),
             type: Joi.string().required(),
         },

@@ -17,6 +17,11 @@ const Announcement = (sequelize, DataTypes) => {
                 allowNull: false,
                 unique: false,
             },
+            title: {
+                type: DataTypes.STRING,
+                allowNull: true,
+                unique: false,
+            },
             description: {
                 type: DataTypes.STRING,
                 allowNull: true,

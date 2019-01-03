@@ -15,19 +15,23 @@ function login(req, res) {
     // Ideally you'll fetch this from the db
     // Idea here was to show how jwt works with simplicity
     const { username, password } = getOr({}, 'body')(req)
-    return findOne('User', { username, password }).then(resUser => {
-        if (!resUser) {
-            return res.status(200).json({
-                status: 400,
-                data: { message: 'Invalid Username/Password' },
-            })
-        }
-        const { dataValues } = resUser
-        const { id, username, type, token } = dataValues
-        return res
-            .status(200)
-            .json({ status: 200, data: { id, username, type, token } })
-    })
+    return findOne('User', { username, password })
+        .then(resUser => {
+            if (!resUser) {
+                return res.status(200).json({
+                    status: 400,
+                    data: { message: 'Invalid Username/Password' },
+                })
+            }
+            const { dataValues } = resUser
+            const { id, username, type, token } = dataValues
+            return res
+                .status(200)
+                .json({ status: 200, data: { id, username, type, token } })
+        })
+        .catch(e => {
+            return next(e)
+        })
 }
 
 /**

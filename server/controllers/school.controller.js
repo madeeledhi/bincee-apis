@@ -1,14 +1,16 @@
 // libs
-import jwt from "jsonwebtoken"
-import httpStatus from "http-status"
-import getOr from "lodash/fp/getOr"
-import split from "lodash/fp/split"
-import flow from "lodash/fp/flow"
-import map from "lodash/fp/map"
-import size from "lodash/fp/size"
-import reduce from "lodash/fp/reduce"
-import keys from "lodash/fp/keys"
-import filter from "lodash/fp/filter"
+import jwt from 'jsonwebtoken'
+import httpStatus from 'http-status'
+import getOr from 'lodash/fp/getOr'
+import split from 'lodash/fp/split'
+import flow from 'lodash/fp/flow'
+import map from 'lodash/fp/map'
+import size from 'lodash/fp/size'
+import reduce from 'lodash/fp/reduce'
+import keys from 'lodash/fp/keys'
+import filter from 'lodash/fp/filter'
+import isFinite from 'lodash/isFinite'
+import parseInt from 'lodash/parseInt'
 
 // src
 import {
@@ -20,28 +22,34 @@ import {
     createMutiple,
     destroy,
     update,
-    findAcross
-} from "../utils"
-import config from "../../config/config"
-import Announcement from "../models/announcement.model"
+    findAcross,
+    sendNotification,
+    sendEmail,
+} from '../utils'
+import config from '../../config/config'
+import Announcement from '../models/announcement.model'
 
 //Create funtions
 function createBus(req, res, next) {
-    const { registration_no, description, driver_id } = getOr({}, "body")(req)
-    return findOne("Bus", { registration_no }).then(resBus => {
+    const { registration_no, description, driver_id } = getOr({}, 'body')(req)
+    return findOne('Bus', { registration_no }).then(resBus => {
         if (!resBus) {
-            return createOne("Bus", {
+            return createOne('Bus', {
                 registration_no,
                 description,
-                driver_id
-            }).then(bus => {
-                return res.status(200).json({ status: 200, data: bus })
+                driver_id,
             })
+                .then(bus => {
+                    return res.status(200).json({ status: 200, data: bus })
+                })
+                .catch(e => {
+                    return next(e)
+                })
         }
 
         return res
             .status(200)
-            .json({ status: 302, data: { message: "Bus Already Exists" } })
+            .json({ status: 302, data: { message: 'Bus Already Exists' } })
     })
 }
 function createStudent(req, res, next) {
@@ -52,136 +60,189 @@ function createStudent(req, res, next) {
         parent_id,
         driver_id,
         status,
-        photo
-    } = getOr({}, "body")(req)
+        photo,
+    } = getOr({}, 'body')(req)
 
-    return findOne("Student", { fullname, parent_id }).then(resStu => {
+    return findOne('Student', { fullname, parent_id }).then(resStu => {
         if (!resStu) {
-            return createOne("Student", {
+            return createOne('Student', {
                 fullname,
                 grade,
                 shift,
                 parent_id,
                 driver_id,
                 status,
-                photo
-            }).then(student => {
-                return res.status(200).json({ status: 200, data: student })
+                photo,
             })
+                .then(student => {
+                    return res.status(200).json({ status: 200, data: student })
+                })
+                .catch(e => {
+                    return next(e)
+                })
         }
 
         return res
             .status(200)
-            .json({ status: 302, data: { message: "Student Already Exists" } })
+            .json({ status: 302, data: { message: 'Student Already Exists' } })
     })
 }
 
 function createNotification(req, res, next) {
-    const { studentArray, last_updated, description, type } = getOr({}, "body")(
-        req
-    )
+    const { studentArray, last_updated, title, description, type } = getOr(
+        {},
+        'body',
+    )(req)
 
-    const { authorization } = getOr({}, "headers")(req)
+    const { authorization } = getOr({}, 'headers')(req)
     const token = flow(
-        split(" "),
-        splitted => splitted[1]
+        split(' '),
+        splitted => splitted[1],
     )(authorization)
 
-    return findOne("User", { token }).then(resUser => {
+    return findOne('User', { token }).then(resUser => {
         if (resUser) {
             const { dataValues } = resUser
             const { id: school_id } = dataValues
 
-            return createOne("Announcement", {
+            return createOne('Announcement', {
                 school_id,
                 last_updated,
                 type,
-                description
-            }).then(announcement => {
-                if (type === "school") {
-                    return res.status(200).json({
-                        status: 200,
-                        data: announcement
-                    })
-                } else {
-                    const { dataValues } = announcement
-                    const { id: announcement_id } = dataValues
-                    if (size(studentArray) > 0) {
-                        const multiply = map(student_id => {
-                            return createOne("Notify", {
-                                student_id,
-                                announcement_id
-                            }).then(notify => {
-                                return notify
-                            })
-                        })(studentArray)
-                        return Promise.all(multiply).then(response =>
-                            res.status(200).json({
-                                status: 200,
-                                data: {
-                                    announcement: dataValues,
-                                    notify: response
-                                }
-                            })
-                        )
-                    } else {
+                title,
+                description,
+            })
+                .then(announcement => {
+                    if (type === 'school') {
+                        sendNotification(`${type}-${school_id}`, {
+                            title,
+                            description,
+                        })
                         return res.status(200).json({
                             status: 200,
-                            data: {
-                                announcement,
-                                notify: []
-                            }
+                            data: announcement,
                         })
+                    } else {
+                        const { dataValues } = announcement
+                        const { id: announcement_id } = dataValues
+                        if (size(studentArray) > 0) {
+                            const multiply = map(
+                                ({ student_id, parent_id, fullname }) => {
+                                    return createOne('Notify', {
+                                        student_id,
+                                        announcement_id,
+                                    }).then(notify => {
+                                        sendNotification(
+                                            `${type}-${parent_id}`,
+                                            {
+                                                title,
+                                                student: fullname,
+                                                description,
+                                            },
+                                        )
+                                        return notify
+                                    })
+                                },
+                            )(studentArray)
+                            return Promise.all(multiply).then(response =>
+                                res.status(200).json({
+                                    status: 200,
+                                    data: {
+                                        announcement: dataValues,
+                                        notify: response,
+                                    },
+                                }),
+                            )
+                        } else {
+                            return res.status(200).json({
+                                status: 200,
+                                data: {
+                                    announcement,
+                                    notify: [],
+                                },
+                            })
+                        }
                     }
-                }
-            })
+                })
+                .catch(e => {
+                    return next(e)
+                })
         } else {
             return res
                 .status(200)
-                .json({ status: 404, data: { message: "User Not found" } })
+                .json({ status: 404, data: { message: 'User Not found' } })
         }
     })
 }
 
 function createLeave(req, res, next) {
-    const { from_date, to_date, student_id } = getOr({}, "body")(req)
-    return findOne("Leaves", { from_date, to_date, student_id }).then(
+    const {
+        from_date: from,
+        to_date: to,
+        student_id,
+        comment,
+        school_id,
+    } = getOr({}, 'body')(req)
+
+    const isNumber = flow(
+        parseInt,
+        isFinite,
+    )
+    const getInt = data => (isNumber(data) ? parseInt(data) : '')
+    if (!(typeof getInt(to) === 'number' || typeof getInt(from) === 'number')) {
+        return res.status(200).json({
+            status: 401,
+            data: { message: 'Invalide from/to date' },
+        })
+    }
+    const day = 24 * 60 * 60
+    const from_date = new Date(from * 1000)
+    const to_date = new Date((to + day) * 1000)
+    return findOne('Leaves', { from_date, to_date, student_id }).then(
         resLeave => {
             if (!resLeave) {
-                return createOne("Leaves", {
+                return createOne('Leaves', {
                     from_date,
                     to_date,
-                    student_id
-                }).then(Leave => {
-                    return res.status(200).json({ status: 200, data: Leave })
+                    student_id,
+                    comment,
+                    school_id,
                 })
+                    .then(Leave => {
+                        return res
+                            .status(200)
+                            .json({ status: 200, data: Leave })
+                    })
+                    .catch(e => {
+                        return next(e)
+                    })
             }
             return res.status(200).json({
                 status: 302,
-                data: { message: "Leave Already Exists" }
+                data: { message: 'Leave Already Exists' },
             })
-        }
+        },
     )
 }
 function createDriver(req, res, next) {
     const { username, password, fullname, phone_no, status, photo } = getOr(
         {},
-        "body"
+        'body',
     )(req)
-    const { authorization } = getOr({}, "headers")(req)
+    const { authorization } = getOr({}, 'headers')(req)
     const token = flow(
-        split(" "),
-        splitted => splitted[1]
+        split(' '),
+        splitted => splitted[1],
     )(authorization)
 
-    return findOne("User", { token }).then(resUser => {
+    return findOne('User', { token }).then(resUser => {
         if (resUser) {
             const { dataValues } = resUser
             const { id, type } = dataValues
 
-            return findOne("User", {
+            return findOne('User', {
                 username,
-                password
+                password,
             }).then(resUser => {
                 if (!resUser) {
                     const token = jwt.sign({ username }, config.jwtSecret)
@@ -191,30 +252,28 @@ function createDriver(req, res, next) {
                         phone_no,
                         status,
                         school_id: id,
-                        photo
+                        photo,
                     }
-                    return createOne("User", user)
+                    return createOne('User', user)
                         .then(savedUser => {
                             const { dataValues } = savedUser
                             const { id: driver_id, username } = dataValues
-                            return createOne("Driver", {
+                            return createOne('Driver', {
                                 driver_id,
-                                ...driver
+                                ...driver,
                             }).then(savedDriver => {
-                                const {
-                                    dataValues: driverValues
-                                } = savedDriver
+                                const { dataValues: driverValues } = savedDriver
                                 return res
                                     .status(200)
                                     .json({
                                         status: 200,
                                         data: {
                                             username,
-                                            ...driverValues
-                                        }
+                                            ...driverValues,
+                                        },
                                     })
                                     .catch(err => {
-                                        destroy("User", { id: driver_id })
+                                        destroy('User', { id: driver_id })
                                         return next(e)
                                     })
                             })
@@ -222,15 +281,22 @@ function createDriver(req, res, next) {
                         .catch(e => next(e))
                 }
 
-                return res.status(200).json({
-                    status: 302,
-                    data: { message: "Driver Already Exists" }
-                })
+                return res
+                    .status(200)
+                    .json({
+                        status: 302,
+                        data: {
+                            message: 'Driver Already Exists',
+                        },
+                    })
+                    .catch(e => {
+                        return next(e)
+                    })
             })
         }
         return res
             .status(200)
-            .json({ status: 400, data: { message: "Cannot Create Driver" } })
+            .json({ status: 400, data: { message: 'Cannot Create Driver' } })
     })
 }
 function createParent(req, res, next) {
@@ -244,22 +310,22 @@ function createParent(req, res, next) {
         lat,
         lng,
         status,
-        photo
-    } = getOr({}, "body")(req)
-    const { authorization } = getOr({}, "headers")(req)
+        photo,
+    } = getOr({}, 'body')(req)
+    const { authorization } = getOr({}, 'headers')(req)
     const token = flow(
-        split(" "),
-        splitted => splitted[1]
+        split(' '),
+        splitted => splitted[1],
     )(authorization)
 
-    return findOne("User", { token }).then(resUser => {
+    return findOne('User', { token }).then(resUser => {
         if (resUser) {
             const { dataValues } = resUser
             const { id, type } = dataValues
 
-            return findOne("User", {
+            return findOne('User', {
                 username,
-                password
+                password,
             }).then(resUser => {
                 if (!resUser) {
                     const token = jwt.sign({ username }, config.jwtSecret)
@@ -273,31 +339,36 @@ function createParent(req, res, next) {
                         lng,
                         status,
                         school_id: id,
-                        photo
+                        photo,
                     }
-                    return createOne("User", user)
+                    return createOne('User', user)
                         .then(savedUser => {
                             const { dataValues } = savedUser
                             const { id: parent_id, username } = dataValues
-                            return createOne("Parent", {
+                            return createOne('Parent', {
                                 parent_id,
-                                ...parent
+                                ...parent,
                             }).then(savedParent => {
-                                const {
-                                    dataValues: parentValues
-                                } = savedParent
+                                const { dataValues: parentValues } = savedParent
+                                const html = `<div><b>username</b> : ${username} </br><b>password</b> : ${password} </div>`
+                                sendEmail(
+                                    email,
+                                    'Bincee Login Credentials',
+                                    'Sign in to bincee using credentials',
+                                    html,
+                                )
                                 return res
                                     .status(200)
                                     .json({
                                         status: 200,
                                         data: {
                                             username,
-                                            ...parentValues
-                                        }
+                                            ...parentValues,
+                                        },
                                     })
                                     .catch(err => {
-                                        destroy("User", {
-                                            id: parent_id
+                                        destroy('User', {
+                                            id: parent_id,
                                         })
                                         return next(e)
                                     })
@@ -308,172 +379,191 @@ function createParent(req, res, next) {
 
                 return res.status(200).json({
                     status: 302,
-                    data: { message: "Parent Already Exists" }
+                    data: { message: 'Parent Already Exists' },
                 })
             })
         }
         return res
             .status(200)
-            .json({ status: 400, data: { message: "Cannot Create Parent" } })
+            .json({ status: 400, data: { message: 'Cannot Create Parent' } })
     })
 }
 function createGrade(req, res, next) {
-    const { grade_name, section } = getOr({}, "body")(req)
-    const { authorization } = getOr({}, "headers")(req)
+    const { grade_name, section } = getOr({}, 'body')(req)
+    const { authorization } = getOr({}, 'headers')(req)
     const token = flow(
-        split(" "),
-        splitted => splitted[1]
+        split(' '),
+        splitted => splitted[1],
     )(authorization)
-    return findOne("User", { token }).then(resUser => {
+    return findOne('User', { token }).then(resUser => {
         if (resUser) {
             const { dataValues } = resUser
             const { id, type } = dataValues
             const grade_section = `${grade_name + section}`
-            return findOne("Grade", { grade_name, section }).then(resGrade => {
-                if (!resGrade) {
-                    return createOne("Grade", {
-                        grade_name,
-                        section,
-                        grade_section,
-                        school_id: id
-                    }).then(grade => {
-                        return res
-                            .status(200)
-                            .json({ status: 200, data: grade })
-                    })
-                }
+            return findOne('Grade', { grade_name, section })
+                .then(resGrade => {
+                    if (!resGrade) {
+                        return createOne('Grade', {
+                            grade_name,
+                            section,
+                            grade_section,
+                            school_id: id,
+                        }).then(grade => {
+                            return res
+                                .status(200)
+                                .json({ status: 200, data: grade })
+                        })
+                    }
 
-                return res.status(200).json({
-                    status: 302,
-                    data: { message: "Grade Already Exists" }
+                    return res.status(200).json({
+                        status: 302,
+                        data: {
+                            message: 'Grade Already Exists',
+                        },
+                    })
                 })
-            })
+                .catch(e => {
+                    return next(e)
+                })
         }
         return res
             .status(200)
-            .json({ status: 400, data: { message: "Cannot Create Grade" } })
+            .json({ status: 400, data: { message: 'Cannot Create Grade' } })
     })
 }
 function createShift(req, res, next) {
-    const { shift_name, start_time, end_time } = getOr({}, "body")(req)
-    const { authorization } = getOr({}, "headers")(req)
+    const { shift_name, start_time, end_time } = getOr({}, 'body')(req)
+    const { authorization } = getOr({}, 'headers')(req)
     const token = flow(
-        split(" "),
-        splitted => splitted[1]
+        split(' '),
+        splitted => splitted[1],
     )(authorization)
-    return findOne("User", { token }).then(resUser => {
+    return findOne('User', { token }).then(resUser => {
         if (resUser) {
             const { dataValues } = resUser
             const { id, type } = dataValues
-            return findOne("Shift", {
+            return findOne('Shift', {
                 shift_name,
                 start_time,
                 end_time,
-                school_id: id
-            }).then(resShift => {
-                if (!resShift) {
-                    return createOne("Shift", {
-                        shift_name,
-                        start_time,
-                        end_time,
-                        school_id: id
-                    }).then(shift => {
-                        return res
-                            .status(200)
-                            .json({ status: 200, data: shift })
-                    })
-                }
-
-                return res.status(200).json({
-                    status: 302,
-                    data: { message: "Shift Already Exists" }
-                })
+                school_id: id,
             })
+                .then(resShift => {
+                    if (!resShift) {
+                        return createOne('Shift', {
+                            shift_name,
+                            start_time,
+                            end_time,
+                            school_id: id,
+                        }).then(shift => {
+                            return res
+                                .status(200)
+                                .json({ status: 200, data: shift })
+                        })
+                    }
+
+                    return res.status(200).json({
+                        status: 302,
+                        data: {
+                            message: 'Shift Already Exists',
+                        },
+                    })
+                })
+                .catch(e => {
+                    return next(e)
+                })
         }
         return res
             .status(200)
-            .json({ status: 400, data: { message: "Cannot Create Shift" } })
+            .json({ status: 400, data: { message: 'Cannot Create Shift' } })
     })
 }
 
 //Delete funtions
 function deleteBus(req, res, next) {
-    const { id } = getOr({}, "params")(req)
-    return destroy("Bus", { id })
+    const { id } = getOr({}, 'params')(req)
+    return destroy('Bus', { id })
         .then(() =>
             res
                 .status(200)
-                .json({ status: 200, data: { message: "Bus Deleted" } })
+                .json({ status: 200, data: { message: 'Bus Deleted' } }),
         )
         .catch(e => next(e))
 }
 function deleteLeave(req, res, next) {
-    const { id } = getOr({}, "params")(req)
-    return destroy("Leaves", { id }).then(() =>
-        res
-            .status(200)
-            .json({ status: 200, data: { message: "Leave Deleted" } })
-    )
-}
-function deleteShift(req, res, next) {
-    const { id } = getOr({}, "params")(req)
-    return destroy("Shift", { shift_id: id })
+    const { id } = getOr({}, 'params')(req)
+    return destroy('Leaves', { id })
         .then(() =>
             res
                 .status(200)
-                .json({ status: 200, data: { message: "Shift Deleted" } })
+                .json({ status: 200, data: { message: 'Leave Deleted' } }),
+        )
+        .catch(e => {
+            return next(e)
+        })
+}
+function deleteShift(req, res, next) {
+    const { id } = getOr({}, 'params')(req)
+    return destroy('Shift', { shift_id: id })
+        .then(() =>
+            res
+                .status(200)
+                .json({ status: 200, data: { message: 'Shift Deleted' } }),
         )
         .catch(e => next(e))
 }
 function deleteGrade(req, res, next) {
-    const { id } = getOr({}, "params")(req)
-    return destroy("Grade", { grade_id: id })
+    const { id } = getOr({}, 'params')(req)
+    return destroy('Grade', { grade_id: id })
         .then(() =>
             res
                 .status(200)
-                .json({ status: 200, data: { message: "Grade Deleted" } })
+                .json({ status: 200, data: { message: 'Grade Deleted' } }),
         )
         .catch(e => next(e))
 }
+
 function deleteStudent(req, res, next) {
-    const { id } = getOr({}, "params")(req)
-    return destroy("Student", { id })
-        .then(() =>
-            res.status(200).json({
-                status: 200,
-                data: { message: "Student Deleted" }
-            })
-        )
-        .catch(e => next(e))
+    const { id } = getOr({}, 'params')(req)
+    return destroy('Leaves', { student_id: id }).then(() => {
+        return destroy('Student', { id })
+            .then(() =>
+                res.status(200).json({
+                    status: 200,
+                    data: { message: 'Student Deleted' },
+                }),
+            )
+            .catch(e => next(e))
+    })
 }
 function deleteDriver(req, res, next) {
-    const { id } = getOr({}, "params")(req)
-    return destroy("Bus", { driver_id: id })
+    const { id } = getOr({}, 'params')(req)
+    return destroy('Bus', { driver_id: id })
         .then(() => {
-            return destroy("Driver", { driver_id: id }).then(() => {
-                return destroy("User", {
-                    id
+            return destroy('Driver', { driver_id: id }).then(() => {
+                return destroy('User', {
+                    id,
                 }).then(() =>
                     res.status(200).json({
                         status: 200,
-                        data: { message: "Driver Deleted" }
-                    })
+                        data: { message: 'Driver Deleted' },
+                    }),
                 )
             })
         })
         .catch(e => next(e))
 }
 function deleteParent(req, res, next) {
-    const { id } = getOr({}, "params")(req)
-    return destroy("Parent", { parent_id: id })
+    const { id } = getOr({}, 'params')(req)
+    return destroy('Parent', { parent_id: id })
         .then(() => {
-            return destroy("User", {
-                id
+            return destroy('User', {
+                id,
             }).then(() =>
                 res.status(200).json({
                     status: 200,
-                    data: { message: "Parent Deleted" }
-                })
+                    data: { message: 'Parent Deleted' },
+                }),
             )
         })
         .catch(e => next(e))
@@ -481,403 +571,607 @@ function deleteParent(req, res, next) {
 
 //Update funtions
 function updateBus(req, res, next) {
-    const newData = getOr({}, "body")(req)
-    const { id } = getOr({}, "params")(req)
-    return update("Bus", { id }, newData).then(bus =>
-        res.status(200).json({ status: 200, data: bus })
-    )
+    const newData = getOr({}, 'body')(req)
+    const { id } = getOr({}, 'params')(req)
+    return update('Bus', { id }, newData)
+        .then(bus => res.status(200).json({ status: 200, data: bus }))
+        .catch(e => {
+            return next(e)
+        })
 }
 
 function updateLeave(req, res, next) {
-    const newData = getOr({}, "body")(req)
-    const { id } = getOr({}, "params")(req)
-    return update("Leaves", { id }, newData).then(leave =>
-        res.status(200).json({ status: 200, data: leave })
+    const newData = getOr({}, 'body')(req)
+    const { id } = getOr({}, 'params')(req)
+    return update('Leaves', { id }, newData).then(leave =>
+        res.status(200).json({ status: 200, data: leave }),
     )
 }
 function updateAnnouncement(req, res, next) {
-    const newData = getOr({}, "body")(req)
-    const { id } = getOr({}, "params")(req)
-    return update("Announcement", { id }, newData).then(announcement =>
-        res.status(200).json({ status: 200, data: announcement })
-    )
+    const newData = getOr({}, 'body')(req)
+    const { id } = getOr({}, 'params')(req)
+    return update('Announcement', { id }, newData)
+        .then(announcement =>
+            res.status(200).json({ status: 200, data: announcement }),
+        )
+        .catch(e => {
+            return next(e)
+        })
 }
 function updateGrade(req, res, next) {
-    const newData = getOr({}, "body")(req)
-    const { id } = getOr({}, "params")(req)
-    return update("Grade", { grade_id: id }, newData).then(grade =>
-        res.status(200).json({ status: 200, data: grade })
-    )
+    const newData = getOr({}, 'body')(req)
+    const { id } = getOr({}, 'params')(req)
+    return update('Grade', { grade_id: id }, newData)
+        .then(grade => res.status(200).json({ status: 200, data: grade }))
+        .catch(e => {
+            return next(e)
+        })
 }
 function updateShift(req, res, next) {
-    const newData = getOr({}, "body")(req)
-    const { id } = getOr({}, "params")(req)
-    return update("Shift", { shift_id: id }, newData).then(shift =>
-        res.status(200).json({ status: 200, data: shift })
-    )
+    const newData = getOr({}, 'body')(req)
+    const { id } = getOr({}, 'params')(req)
+    return update('Shift', { shift_id: id }, newData)
+        .then(shift => res.status(200).json({ status: 200, data: shift }))
+        .catch(e => {
+            return next(e)
+        })
 }
 function updateStudent(req, res, next) {
-    const newData = getOr({}, "body")(req)
-    const { id } = getOr({}, "params")(req)
-    return update("Student", { id }, newData).then(student =>
-        res.status(200).json({ status: 200, data: student })
-    )
+    const newData = getOr({}, 'body')(req)
+    const { id } = getOr({}, 'params')(req)
+    return update('Student', { id }, newData)
+        .then(student => res.status(200).json({ status: 200, data: student }))
+        .catch(e => {
+            return next(e)
+        })
 }
 function updateDriver(req, res, next) {
-    const newData = getOr({}, "body")(req)
-    const { id } = getOr({}, "params")(req)
-    return update("Driver", { driver_id: id }, newData).then(driver =>
-        res.status(200).json({ status: 200, data: driver })
-    )
+    const newData = getOr({}, 'body')(req)
+    const { id } = getOr({}, 'params')(req)
+    return update('Driver', { driver_id: id }, newData)
+        .then(driver => res.status(200).json({ status: 200, data: driver }))
+        .catch(e => {
+            return next(e)
+        })
 }
 function updateParent(req, res, next) {
-    const newData = getOr({}, "body")(req)
-    const { id } = getOr({}, "params")(req)
-    return update("Parent", { parent_id: id }, newData).then(parent =>
-        res.status(200).json({ status: 200, data: parent })
-    )
+    const newData = getOr({}, 'body')(req)
+    const { id } = getOr({}, 'params')(req)
+    return update('Parent', { parent_id: id }, newData)
+        .then(parent => res.status(200).json({ status: 200, data: parent }))
+        .catch(e => {
+            return next(e)
+        })
 }
 
 //Get funtions
 function getBus(req, res, next) {
-    const { id } = getOr({}, "params")(req)
-    return findOne("Bus", { id }).then(bus =>
-        res.status(200).json({ status: 200, data: bus })
-    )
+    const { id } = getOr({}, 'params')(req)
+    return findOne('Bus', { id })
+        .then(bus => res.status(200).json({ status: 200, data: bus }))
+        .catch(e => {
+            return next(e)
+        })
 }
 function getLeave(req, res, next) {
-    const { id } = getOr({}, "params")(req)
-    return findOne("Leaves", { id }).then(leave =>
-        res.status(200).json({ status: 200, data: leave })
-    )
+    const { id } = getOr({}, 'params')(req)
+    return findOne('Leaves', { id })
+        .then(leave => res.status(200).json({ status: 200, data: leave }))
+        .catch(e => {
+            return next(e)
+        })
 }
 function getAnnouncement(req, res, next) {
-    const { id } = getOr({}, "params")(req)
-    return findOne("Announcement", {
-        id
-    }).then(announcement =>
-        res.status(200).json({ status: 200, data: announcement })
-    )
+    const { id } = getOr({}, 'params')(req)
+    return findOne('Announcement', { id })
+        .then(announcement =>
+            res.status(200).json({ status: 200, data: announcement }),
+        )
+        .catch(e => {
+            return next(e)
+        })
 }
 function getShift(req, res, next) {
-    const { id } = getOr({}, "params")(req)
-    return findOne("Shift", { shift_id: id }).then(shift =>
-        res.status(200).json({ status: 200, data: shift })
-    )
+    const { id } = getOr({}, 'params')(req)
+    return findOne('Shift', { shift_id: id })
+        .then(shift => res.status(200).json({ status: 200, data: shift }))
+        .catch(e => {
+            return next(e)
+        })
 }
 function getGrade(req, res, next) {
-    const { id } = getOr({}, "params")(req)
-    return findOne("Grade", {
-        grade_id: id
-    }).then(grade => res.status(200).json({ status: 200, data: grade }))
+    const { id } = getOr({}, 'params')(req)
+    return findOne('Grade', { grade_id: id })
+        .then(grade => res.status(200).json({ status: 200, data: grade }))
+        .catch(e => {
+            return next(e)
+        })
 }
 function getStudent(req, res, next) {
-    const { id } = getOr({}, "params")(req)
-    return findOne("Student", { id }).then(student =>
-        res.status(200).json({ status: 200, data: student })
-    )
+    const { id } = getOr({}, 'params')(req)
+    return findOne('Student', { id })
+        .then(student => res.status(200).json({ status: 200, data: student }))
+        .catch(e => {
+            return next(e)
+        })
 }
 function getDriver(req, res, next) {
-    const { id } = getOr({}, "params")(req)
-    return findOne("Driver", {
-        driver_id: id
-    }).then(driver => res.status(200).json({ status: 200, data: driver }))
+    const { id } = getOr({}, 'params')(req)
+    return findOne('Driver', { driver_id: id })
+        .then(driver => res.status(200).json({ status: 200, data: driver }))
+        .catch(e => {
+            return next(e)
+        })
 }
 function getParent(req, res, next) {
-    const { id } = getOr({}, "params")(req)
-    return findOne("Parent", {
-        parent_id: id
-    }).then(parent => res.status(200).json({ status: 200, data: parent }))
+    const { id } = getOr({}, 'params')(req)
+    return findOne('Parent', { parent_id: id })
+        .then(parent => res.status(200).json({ status: 200, data: parent }))
+        .catch(e => {
+            return next(e)
+        })
 }
 
 //getList funtions
 function busList(req, res, next) {
-    const { authorization } = getOr({}, "headers")(req)
+    const { authorization } = getOr({}, 'headers')(req)
     const token = flow(
-        split(" "),
-        splitted => splitted[1]
+        split(' '),
+        splitted => splitted[1],
     )(authorization)
 
-    return findOne("User", { token }).then(resUser => {
-        if (resUser) {
-            const { dataValues } = resUser
-            const { id, type } = dataValues
+    return findOne('User', { token })
+        .then(resUser => {
+            if (resUser) {
+                const { dataValues } = resUser
+                const { id, type } = dataValues
 
-            return findAcross("Bus", { school_id: id }, "Driver").then(bus =>
-                res.status(200).json({ status: 200, data: bus })
-            )
-        }
-        return res
-            .status(200)
-            .json({ status: 404, data: { message: "No Buses Found" } })
-    })
-}
-function gradeList(req, res, next) {
-    const { authorization } = getOr({}, "headers")(req)
-    const token = flow(
-        split(" "),
-        splitted => splitted[1]
-    )(authorization)
-
-    return findOne("User", { token }).then(resUser => {
-        if (resUser) {
-            const { dataValues } = resUser
-            const { id, type } = dataValues
-
-            return findAcross("Grade", { school_id: id }).then(grade =>
-                res.status(200).json({ status: 200, data: grade })
-            )
-        }
-        return res
-            .status(200)
-            .json({ status: 404, data: { message: "No Grades Found" } })
-    })
-}
-function shiftList(req, res, next) {
-    const { authorization } = getOr({}, "headers")(req)
-    const token = flow(
-        split(" "),
-        splitted => splitted[1]
-    )(authorization)
-
-    return findOne("User", { token }).then(resUser => {
-        if (resUser) {
-            const { dataValues } = resUser
-            const { id, type } = dataValues
-
-            return findAcross("Shift", { school_id: id }).then(shift =>
-                res.status(200).json({ status: 200, data: shift })
-            )
-        }
-        return res
-            .status(200)
-            .json({ status: 404, data: { message: "No Shifts Found" } })
-    })
-}
-function studentList(req, res, next) {
-    const { authorization } = getOr({}, "headers")(req)
-    const token = flow(
-        split(" "),
-        splitted => splitted[1]
-    )(authorization)
-
-    return findOne("User", { token }).then(resUser => {
-        if (resUser) {
-            const { dataValues } = resUser
-            const { id, type } = dataValues
-            //verify it
-            return findAcross("Student", { school_id: id }, "Parent").then(
-                student => res.status(200).json({ status: 200, data: student })
-            )
-        }
-        return res
-            .status(200)
-            .json({ status: 404, data: { message: "No Students Found" } })
-    })
-}
-function driverBusList(req, res, next) {
-    const { id } = getOr({}, "params")(req)
-    return findOne("Driver", { driver_id: id }).then(driver => {
-        if (driver) {
-            const { dataValues: driverValues } = driver
-            return findOne("Bus", { driver_id: id }).then(bus => {
-                if (bus) {
-                    const { dataValues: busValues } = bus
-                    const data = { ...driverValues, bus: busValues }
-                    return res.status(200).json({ status: 200, data })
-                } else {
-                    const data = { ...driverValues, bus: {} }
-                    return res.status(200).json({ status: 200, data })
-                }
-            })
-        } else {
+                return findAcross('Bus', { school_id: id }, 'Driver').then(
+                    buses => {
+                        if (size(buses) > 0) {
+                            const busMap = map(bus => {
+                                const { dataValues: busValues } = bus
+                                const { driver_id } = busValues
+                                return findOne('Driver', {
+                                    driver_id,
+                                }).then(driver => {
+                                    return {
+                                        ...busValues,
+                                        driver_name: driver
+                                            ? driver.dataValues.fullname
+                                            : '',
+                                    }
+                                })
+                            })(buses)
+                            return Promise.all(busMap).then(results => {
+                                return res.status(200).json({
+                                    status: 200,
+                                    data: results,
+                                })
+                            })
+                        } else {
+                            return res.status(200).json({
+                                status: 404,
+                                data: { message: 'No Bus Found' },
+                            })
+                        }
+                    },
+                )
+            }
             return res
                 .status(200)
-                .json({ status: 404, data: { message: "No Driver Exists" } })
-        }
-    })
+                .json({ status: 404, data: { message: 'No Buses Found' } })
+        })
+        .catch(e => {
+            return next(e)
+        })
+}
+function gradeList(req, res, next) {
+    const { authorization } = getOr({}, 'headers')(req)
+    const token = flow(
+        split(' '),
+        splitted => splitted[1],
+    )(authorization)
+
+    return findOne('User', { token })
+        .then(resUser => {
+            if (resUser) {
+                const { dataValues } = resUser
+                const { id, type } = dataValues
+
+                return findAcross('Grade', {
+                    school_id: id,
+                }).then(grade =>
+                    res.status(200).json({ status: 200, data: grade }),
+                )
+            }
+            return res
+                .status(200)
+                .json({ status: 404, data: { message: 'No Grades Found' } })
+        })
+        .catch(e => {
+            return next(e)
+        })
+}
+function shiftList(req, res, next) {
+    const { authorization } = getOr({}, 'headers')(req)
+    const token = flow(
+        split(' '),
+        splitted => splitted[1],
+    )(authorization)
+
+    return findOne('User', { token })
+        .then(resUser => {
+            if (resUser) {
+                const { dataValues } = resUser
+                const { id, type } = dataValues
+
+                return findAcross('Shift', {
+                    school_id: id,
+                }).then(shift =>
+                    res.status(200).json({ status: 200, data: shift }),
+                )
+            }
+            return res
+                .status(200)
+                .json({ status: 404, data: { message: 'No Shifts Found' } })
+        })
+        .catch(e => {
+            return next(e)
+        })
+}
+function studentList(req, res, next) {
+    const { authorization } = getOr({}, 'headers')(req)
+    const token = flow(
+        split(' '),
+        splitted => splitted[1],
+    )(authorization)
+
+    return findOne('User', { token })
+        .then(resUser => {
+            if (resUser) {
+                const { dataValues } = resUser
+                const { id, type } = dataValues
+                //verify it
+                return findAcross('Student', { school_id: id }, 'Parent').then(
+                    students => {
+                        if (size(students) > 0) {
+                            const studentMaps = map(student => {
+                                const { dataValues: studentValues } = student
+                                const {
+                                    parent_id,
+                                    driver_id,
+                                    grade: grade_id,
+                                    shift: shift_id,
+                                } = studentValues
+                                return findOne('Driver', {
+                                    driver_id,
+                                }).then(driver => {
+                                    return findOne('Parent', {
+                                        parent_id,
+                                    }).then(parent => {
+                                        return findOne('Grade', {
+                                            grade_id,
+                                        }).then(grade => {
+                                            return findOne('Shift', {
+                                                shift_id,
+                                            }).then(shift => {
+                                                return {
+                                                    ...studentValues,
+                                                    grade_name: grade
+                                                        ? grade.dataValues
+                                                              .grade_section
+                                                        : '',
+                                                    shift_name: shift
+                                                        ? shift.dataValues
+                                                              .shift_name
+                                                        : '',
+                                                    driver_name: driver
+                                                        ? driver.dataValues
+                                                              .fullname
+                                                        : '',
+                                                    parent_name: parent
+                                                        ? parent.dataValues
+                                                              .fullname
+                                                        : '',
+                                                }
+                                            })
+                                        })
+                                    })
+                                })
+                            })(students)
+                            return Promise.all(studentMaps).then(result => {
+                                return res.status(200).json({
+                                    status: 200,
+                                    data: result,
+                                })
+                            })
+                        } else {
+                            return res.status(200).json({
+                                status: 404,
+                                data: { message: 'No Students Found' },
+                            })
+                        }
+                    },
+                )
+            }
+            return res.status(200).json({
+                status: 404,
+                data: { message: 'No Students Found' },
+            })
+        })
+        .catch(e => {
+            return next(e)
+        })
+}
+function driverBusList(req, res, next) {
+    const { id } = getOr({}, 'params')(req)
+    return findOne('Driver', { driver_id: id })
+        .then(driver => {
+            if (driver) {
+                const { dataValues: driverValues } = driver
+                return findOne('Bus', { driver_id: id }).then(bus => {
+                    if (bus) {
+                        const { dataValues: busValues } = bus
+                        const data = { ...driverValues, bus: busValues }
+                        return res.status(200).json({ status: 200, data })
+                    } else {
+                        const data = { ...driverValues, bus: {} }
+                        return res.status(200).json({ status: 200, data })
+                    }
+                })
+            } else {
+                return res.status(200).json({
+                    status: 404,
+                    data: { message: 'No Driver Exists' },
+                })
+            }
+        })
+        .catch(e => {
+            return next(e)
+        })
 }
 function studentNotificationList(req, res, next) {
-    const { id } = getOr({}, "params")(req)
+    const { id } = getOr({}, 'params')(req)
 
-    return findAcross("Announcement", { student_id: id }, "Notify").then(
-        announcements =>
-            res.status(200).json({ status: 200, data: announcements })
-    )
+    return findAcross('Announcement', { student_id: id }, 'Notify')
+        .then(announcements =>
+            res.status(200).json({ status: 200, data: announcements }),
+        )
+        .catch(e => {
+            return next(e)
+        })
 }
 function schoolNotificationList(req, res, next) {
-    const { id } = getOr({}, "params")(req)
-    return findMultiple("Announcement", {
-        school_id: id,
-        type: "school"
-    }).then(announcements =>
-        res.status(200).json({ status: 200, data: announcements })
-    )
+    const { id } = getOr({}, 'params')(req)
+    return findMultiple('Announcement', { school_id: id, type: 'school' })
+        .then(announcements =>
+            res.status(200).json({ status: 200, data: announcements }),
+        )
+        .catch(e => {
+            return next(e)
+        })
 }
 
 function parentStudentNotifications(req, res, next) {
-    const { id } = getOr({}, "params")(req)
-    return findMultiple("Student", {
-        parent_id: id
-    }).then(students => {
-        if (size(students) > 0) {
-            const notifications = map(student => {
-                const { dataValues: studentValues } = student
-                const { id: student_id } = studentValues
-                return findAcross(
-                    "Announcement",
-                    { student_id },
-                    "Notify"
-                ).then(announcements => {
-                    return { [student_id]: announcements }
-                })
-            })(students)
+    const { id } = getOr({}, 'params')(req)
+    return findMultiple('Student', { parent_id: id })
+        .then(students => {
+            if (size(students) > 0) {
+                const notifications = map(student => {
+                    const { dataValues: studentValues } = student
+                    const { id: student_id } = studentValues
+                    return findAcross(
+                        'Announcement',
+                        { student_id },
+                        'Notify',
+                    ).then(announcements => {
+                        return { [student_id]: announcements }
+                    })
+                })(students)
 
-            return Promise.all(notifications).then(response => {
-                const results = reduce((final, current) => {
-                    const [key] = keys(current)
-                    return {
-                        ...final,
-                        [key]: current[key]
-                    }
-                }, {})(response)
-                return res.status(200).json({ status: 200, data: results })
-            })
-        } else {
-            return res.status(200).json({ status: 200, data: [] })
-        }
-    })
+                return Promise.all(notifications).then(response => {
+                    const results = reduce((final, current) => {
+                        const [key] = keys(current)
+                        return { ...final, [key]: current[key] }
+                    }, {})(response)
+                    return res.status(200).json({ status: 200, data: results })
+                })
+            } else {
+                return res.status(200).json({ status: 200, data: [] })
+            }
+        })
+        .catch(e => {
+            return next(e)
+        })
 }
 
 function notificationList(req, res, next) {
-    const { authorization } = getOr({}, "headers")(req)
+    const { authorization } = getOr({}, 'headers')(req)
     const token = flow(
-        split(" "),
-        splitted => splitted[1]
+        split(' '),
+        splitted => splitted[1],
     )(authorization)
 
-    return findOne("User", { token }).then(resUser => {
-        if (resUser) {
-            const { dataValues } = resUser
-            const { id } = dataValues
-            return findMultiple("Announcement", {
-                school_id: id
-            }).then(announcements =>
-                res.status(200).json({ status: 200, data: announcements })
-            )
-        }
-        return res.status(200).json({
-            status: 404,
-            data: { message: "No Announcements Founds" }
-        })
-    })
-}
-function studentLeaveList(req, res, next) {
-    const { id } = getOr({}, "params")(req)
-    return findMultiple("Leaves", { student_id: id }).then(leave =>
-        res.status(200).json({ status: 200, data: leave })
-    )
-}
-function leavesList(req, res, next) {
-    const { authorization } = getOr({}, "headers")(req)
-    const token = flow(
-        split(" "),
-        splitted => splitted[1]
-    )(authorization)
-
-    return findOne("User", { token }).then(resUser => {
-        if (resUser) {
-            const { dataValues } = resUser
-            const { id } = dataValues
-
-            return listAll("Leaves").then(leaves => {
-                if (size(leaves) > 0) {
-                    const filteredLeaves = filter(leave => {
-                        const { dataValues: leaveValues } = leave
-                        const { student_id } = leaveValues
-                        return findOne("Student", {
-                            student_id,
-                            school_id: id
-                        }).then(student => {
-                            if (student) {
-                                return true
-                            } else {
-                                return false
-                            }
-                        })
-                    })(leaves)
-
-                    return Promise.all(filteredLeaves).then(response => {
-                        return res
-                            .status(200)
-                            .json({ status: 200, data: response })
-                    })
-                } else {
-                    return res.status(200).json({ status: 200, data: [] })
-                }
-            })
-        } else {
+    return findOne('User', { token })
+        .then(resUser => {
+            if (resUser) {
+                const { dataValues } = resUser
+                const { id } = dataValues
+                return findMultiple('Announcement', {
+                    school_id: id,
+                }).then(announcements =>
+                    res.status(200).json({ status: 200, data: announcements }),
+                )
+            }
             return res.status(200).json({
                 status: 404,
-                data: { message: "No Leaves Found" }
+                data: { message: 'No Announcements Founds' },
             })
-        }
-    })
+        })
+        .catch(e => {
+            return next(e)
+        })
+}
+function studentLeaveList(req, res, next) {
+    const { id } = getOr({}, 'params')(req)
+    return findMultiple('Leaves', { student_id: id })
+        .then(leave => res.status(200).json({ status: 200, data: leave }))
+        .catch(e => {
+            return next(e)
+        })
+}
+function leavesList(req, res, next) {
+    const { authorization } = getOr({}, 'headers')(req)
+    const token = flow(
+        split(' '),
+        splitted => splitted[1],
+    )(authorization)
+
+    return findOne('User', { token })
+        .then(resUser => {
+            if (resUser) {
+                const { dataValues } = resUser
+                const { id } = dataValues
+
+                return listAll('Leaves')
+                    .then(leaves => {
+                        if (size(leaves) > 0) {
+                            const filteredLeaves = map(leave => {
+                                const { dataValues: leaveValues } = leave
+                                const { student_id, id: leave_id } = leaveValues
+                                return findOne('Student', {
+                                    id: student_id,
+                                }).then(student => {
+                                    if (student) {
+                                        const {
+                                            dataValues: studentValues,
+                                        } = student
+                                        const { parent_id } = studentValues
+                                        return findOne('Parent', {
+                                            parent_id,
+                                            school_id: id,
+                                        }).then(parent => {
+                                            if (parent) {
+                                                return {
+                                                    ...leaveValues,
+                                                    ...studentValues,
+                                                    id: leave_id,
+                                                    found: true,
+                                                }
+                                            } else {
+                                                return {
+                                                    ...leaveValues,
+                                                    found: false,
+                                                }
+                                            }
+                                        })
+                                    } else {
+                                        return { ...leaveValues, found: false }
+                                    }
+                                })
+                            })(leaves)
+
+                            return Promise.all(filteredLeaves).then(
+                                response => {
+                                    const filteredResponse = filter(
+                                        ({ found }) => found === true,
+                                    )(response)
+                                    return res.status(200).json({
+                                        status: 200,
+                                        data: filteredResponse,
+                                    })
+                                },
+                            )
+                        } else {
+                            return res
+                                .status(200)
+                                .json({ status: 200, data: [] })
+                        }
+                    })
+                    .catch(e => {
+                        return next(e)
+                    })
+            } else {
+                return res.status(200).json({
+                    status: 404,
+                    data: { message: 'No Leaves Found' },
+                })
+            }
+        })
+        .catch(e => {
+            return next(e)
+        })
 }
 
 function parentStudentList(req, res, next) {
-    const { id } = getOr({}, "params")(req)
-    return findMultiple("Student", { parent_id: id }).then(student =>
-        res.status(200).json({ status: 200, data: student })
+    const { id } = getOr({}, 'params')(req)
+    return findMultiple('Student', { parent_id: id }).then(student =>
+        res.status(200).json({ status: 200, data: student }),
     )
 }
 function driverList(req, res, next) {
-    const { authorization } = getOr({}, "headers")(req)
+    const { authorization } = getOr({}, 'headers')(req)
     const token = flow(
-        split(" "),
-        splitted => splitted[1]
+        split(' '),
+        splitted => splitted[1],
     )(authorization)
 
-    return findOne("User", { token }).then(resUser => {
-        if (resUser) {
-            const { dataValues } = resUser
-            const { id } = dataValues
-            return findMultiple("Driver", {
-                school_id: id
-            }).then(driver =>
-                res.status(200).json({ status: 200, data: driver })
-            )
-        } else {
-            return res.status(200).json({
-                status: 404,
-                data: { message: "No Driver Accounts Found" }
-            })
-        }
-    })
+    return findOne('User', { token })
+        .then(resUser => {
+            if (resUser) {
+                const { dataValues } = resUser
+                const { id } = dataValues
+                return findMultiple('Driver', { school_id: id })
+                    .then(driver =>
+                        res.status(200).json({
+                            status: 200,
+                            data: driver,
+                        }),
+                    )
+                    .catch(e => {
+                        return next(e)
+                    })
+            } else {
+                return res.status(200).json({
+                    status: 404,
+                    data: { message: 'No Driver Accounts Found' },
+                })
+            }
+        })
+        .catch(e => {
+            return next(e)
+        })
 }
 
 function parentList(req, res, next) {
-    const { authorization } = getOr({}, "headers")(req)
+    const { authorization } = getOr({}, 'headers')(req)
     const token = flow(
-        split(" "),
-        splitted => splitted[1]
+        split(' '),
+        splitted => splitted[1],
     )(authorization)
 
-    return findOne("User", { token }).then(resUser => {
-        if (resUser) {
-            const { dataValues } = resUser
-            const { id } = dataValues
-            return findMultiple("Parent", {
-                school_id: id
-            }).then(parent =>
-                res.status(200).json({ status: 200, data: parent })
-            )
-        }
-        return res.status(200).json({
-            status: 404,
-            data: { message: "No Parents Accounts Founds" }
+    return findOne('User', { token })
+        .then(resUser => {
+            if (resUser) {
+                const { dataValues } = resUser
+                const { id } = dataValues
+                return findMultiple('Parent', { school_id: id })
+                    .then(parent =>
+                        res.status(200).json({ status: 200, data: parent }),
+                    )
+                    .catch(e => {
+                        return next(e)
+                    })
+            }
+            return res.status(200).json({
+                status: 404,
+                data: { message: 'No Parents Accounts Founds' },
+            })
         })
-    })
+        .catch(e => {
+            return next(e)
+        })
 }
 
 export default {
@@ -925,5 +1219,5 @@ export default {
     studentLeaveList,
     driverList,
     parentList,
-    leavesList
+    leavesList,
 }

@@ -23,6 +23,7 @@ const storage = multer.diskStorage({
 
 function uploadAvatar(req, res) {
     const upload = multer({ storage: storage }).single('image')
+
     return upload(req, res, err => {
         if (err instanceof multer.MulterError) {
             // A Multer error occurred when uploading.
@@ -41,8 +42,10 @@ function uploadAvatar(req, res) {
                 data: { message: 'System Error Occured while uploading' },
             })
         }
-        const { headers, file } = req
-        const path = headers.host + '/images/' + file.filename
+
+        const { headers, file, protocol } = req
+        const path =
+            protocol + '://' + headers.host + '/images/' + file.filename
         // Everything went fine.
         return res.status(200).json({ status: 200, data: { path } })
     })
