@@ -72,7 +72,7 @@ if (config.env === 'development') {
 
 // Get API Version from .env (or else assume 1.0)
 // const baseUrl = `/api/v${config.apiVersion}`;
-const baseUrl = '/api'
+const baseUrl = '/'
 
 // use JWT auth to secure the api
 // app.use(jwt()

@@ -111,6 +111,7 @@ function createRide(req, res) {
                             } = parentValues
                             return {
                                 id,
+                                parent_id,
                                 fullname,
                                 grade,
                                 photo,
