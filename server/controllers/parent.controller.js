@@ -95,6 +95,66 @@ function getUserData(req, res, next) {
         })
 }
 
+function getDriverData(req, res, next) {
+    const { id } = getOr({}, 'params')(req)
+    return findOne('Driver', { driver_id: id })
+        .then(driver => {
+            if (driver) {
+                const { dataValues: driverValues } = driver
+                const { school_id } = dataValues
+
+                return findOne('School', { school_id }).then(school => {
+                    if (school) {
+                        const { dataValues: schoolValues } = school
+                        return findOne('Bus', { driver_id: id }).then(bus => {
+                            if (bus) {
+                                const { dataValues: busValues } = bus
+                                const { registration_no, description } = bus
+                                return res.status(200).json({
+                                    status: 200,
+                                    data: {
+                                        ...driverValues,
+                                        school: schoolValues,
+                                        bus: {
+                                            registration_no,
+                                            description,
+                                        },
+                                    },
+                                })
+                            } else {
+                                return res.status(200).json({
+                                    status: 200,
+                                    data: {
+                                        ...driverValues,
+                                        school: schoolValues,
+                                        bus: {},
+                                    },
+                                })
+                            }
+                        })
+                    } else {
+                        return res.status(200).json({
+                            status: 200,
+                            data: {
+                                ...driverValues,
+                                school: {},
+                                bus: {},
+                            },
+                        })
+                    }
+                })
+            } else {
+                return res
+                    .status(200)
+                    .json({ status: 404, data: { message: 'No Driver Found' } })
+            }
+        })
+        .catch(e => {
+            return next(e)
+        })
+}
+
 export default {
+    getDriverData,
     getUserData,
 }

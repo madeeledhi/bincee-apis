@@ -10,6 +10,7 @@ import schoolRoute from './school.route'
 import rideRoute from './ride.route'
 import parentRoute from './parent.route'
 import avatarRouter from './avatar.route'
+import driverRouter from './driver.route'
 
 const router = express.Router() // eslint-disable-line new-cap
 
@@ -31,6 +32,7 @@ router.use('/auth', authRoutes)
 router.use('/ride', rideRoute)
 
 router.use('/parent', parentRoute)
+router.use('/driver', driverRouter)
 router.use('/avatar', avatarRouter)
 
 export default router
