@@ -101,7 +101,7 @@ function getDriverData(req, res, next) {
         .then(driver => {
             if (driver) {
                 const { dataValues: driverValues } = driver
-                const { school_id } = dataValues
+                const { school_id } = driverValues
 
                 return findOne('School', { school_id }).then(school => {
                     if (school) {
@@ -109,7 +109,10 @@ function getDriverData(req, res, next) {
                         return findOne('Bus', { driver_id: id }).then(bus => {
                             if (bus) {
                                 const { dataValues: busValues } = bus
-                                const { registration_no, description } = bus
+                                const {
+                                    registration_no,
+                                    description,
+                                } = busValues
                                 return res.status(200).json({
                                     status: 200,
                                     data: {
