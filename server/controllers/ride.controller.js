@@ -102,7 +102,7 @@ function createRide(req, res) {
                         }).then(parent => {
                             const { dataValues: parentValues } = parent
                             const {
-                                fullname,
+                                fullname: parentname,
                                 phone_no,
                                 address,
                                 lat,
@@ -116,7 +116,7 @@ function createRide(req, res) {
                                 grade,
                                 photo,
                                 shift,
-                                parentname: fullname,
+                                parentname,
                                 phone_no,
                                 address,
                                 lat,
