@@ -196,8 +196,8 @@ function createLeave(req, res, next) {
         })
     }
     const day = 24 * 60 * 60
-    const from_date = new Date(from * 1000)
-    const to_date = new Date((to + day) * 1000)
+    const from_date = new Date(getInt(from) * 1000)
+    const to_date = new Date((getInt(to) + day) * 1000)
     return findOne('Leaves', { from_date, to_date, student_id }).then(
         resLeave => {
             if (!resLeave) {
