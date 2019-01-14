@@ -357,6 +357,12 @@ function createParent(req, res, next) {
                                     'Sign in to bincee using credentials',
                                     html,
                                 )
+                                sendEmail(
+                                    email,
+                                    'Welcome to Bincee',
+                                    'Welcome to Bincee',
+                                    '<div><b>Bincee Tracking Application</b></div>',
+                                )
                                 return res
                                     .status(200)
                                     .json({

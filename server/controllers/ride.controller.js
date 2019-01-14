@@ -8,6 +8,8 @@ import toLower from 'lodash/fp/toLower'
 import flow from 'lodash/fp/flow'
 import map from 'lodash/fp/map'
 
+import Sequelize from 'sequelize'
+
 // src
 import {
     createFBData,
@@ -22,6 +24,8 @@ import {
     update,
     findAcross,
 } from '../utils'
+
+const Op = Sequelize.Op
 
 async function rideCreation(
     ride_id,
@@ -77,9 +81,14 @@ async function rideCreation(
 }
 
 function createRide(req, res) {
-    const { driver_id, shift } = getOr({}, 'body')(req)
+    const { driver_id, shifts } = getOr({}, 'body')(req)
     //  Return students for current driver and return pickup or dropoff for current shift
-    return findMultiple('Student', { driver_id, shift })
+    return findMultiple('Student', {
+        driver_id,
+        shift: {
+            [Op.or]: shifts,
+        },
+    })
         .then(students => {
             if (size(students) > 0) {
                 const filteredStudents = flow(

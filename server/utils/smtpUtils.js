@@ -1,11 +1,10 @@
 import nodemailer from 'nodemailer'
 
-console.log('process', process.env.EMAIL_PASS)
 const transporter = nodemailer.createTransport({
-    service: 'Godaddy',
-    host: 'smtpout.secureserver.net',
-    secure: false,
-    port: 25,
+    service: process.env.SMTP_SERVICE,
+    host: process.env.SMTP,
+    secure: true,
+    port: 465,
     auth: {
         user: process.env.EMAIL,
         pass: process.env.EMAIL_PASS,
@@ -30,10 +29,12 @@ export function sendEmail(
         html,
     }
 
-    transporter.sendMail(mailOptions, (error, info) => {
+    return transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
+            console.log('Error: ', error)
             return error
         } else {
+            console.log('Info: ', info.response)
             return info.response
         }
     })
