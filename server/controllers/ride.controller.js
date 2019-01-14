@@ -7,6 +7,7 @@ import size from 'lodash/fp/size'
 import toLower from 'lodash/fp/toLower'
 import flow from 'lodash/fp/flow'
 import map from 'lodash/fp/map'
+import split from 'lodash/fp/split'
 
 import Sequelize from 'sequelize'
 
@@ -149,6 +150,31 @@ function createRide(req, res) {
         })
 }
 
+function absenteeStudents(req, res, next) {
+    const { id: driver_id } = getOr({}, 'params')(req)
+
+    return findMultiple('Student', { driver_id })
+        .then(students => {
+            if (size(students) > 0) {
+                const mappedStudents = map(student => {
+                    const { dataValues: studentValues } = student
+                    return studentValues
+                })(students)
+                const filteredResponse = filter(
+                    ({ status }) => toLower(status) === 'leave',
+                )(mappedStudents)
+                return res.status(200).json({
+                    status: 200,
+                    data: filteredResponse,
+                })
+            }
+            return res.status(200).json({ status: 200, data: [] })
+        })
+        .catch(e => {
+            return next(e)
+        })
+}
+
 function startRide(req, res) {
     const {
         driver_id,
@@ -256,4 +282,5 @@ export default {
     endRide,
     arrivedAtLocation,
     confirmDropOrPickup,
+    absenteeStudents,
 }

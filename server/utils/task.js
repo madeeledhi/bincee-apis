@@ -12,8 +12,8 @@ import moment from 'moment-timezone'
 import { update, listAll } from '../utils'
 
 export default function task() {
-    const date = moment().tz('Asia/Karachi')
-    updateAll('Student', {}, { status: 'Active' }).then(() => {
+    const date = moment().tz('Asia/Baghdad')
+    update('Student', { status: 'Leave' }, { status: 'Active' }).then(() => {
         listAll('Leaves').then(leaves => {
             map(leave => {
                 const { dataValues: leaveValue } = leave
@@ -21,7 +21,7 @@ export default function task() {
                 const from = moment(from_date)
                 const to = moment(to_date)
                 if (date >= from && date <= to) {
-                    update('Student', { id: student_id }, { status: 'leave' })
+                    update('Student', { id: student_id }, { status: 'Leave' })
                 }
                 if (to < date) {
                     destroy('Leaves', { id })
