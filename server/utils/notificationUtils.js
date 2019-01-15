@@ -20,3 +20,21 @@ export function sendNotification(topic, notification) {
         body: JSON.stringify(body),
     })
 }
+
+export function sendShiftNotification(to, notification) {
+    
+    console.log('Notifying', notification, to)
+    const Authorization = `Bearer ${token}`
+    const headers = { 'Content-type': 'application/json', Authorization }
+    const body = {
+        message: {
+            to,
+            notification,
+        },
+    }
+    return fetch(notificationUrl, {
+        method: 'post',
+        headers,
+        body: JSON.stringify(body),
+    })
+}

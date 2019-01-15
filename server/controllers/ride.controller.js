@@ -1,15 +1,15 @@
 // libs
-import getOr from 'lodash/fp/getOr'
-import filter from 'lodash/fp/filter'
-import reduce from 'lodash/fp/reduce'
-import uniqueId from 'lodash/fp/uniqueId'
-import size from 'lodash/fp/size'
-import toLower from 'lodash/fp/toLower'
-import flow from 'lodash/fp/flow'
-import map from 'lodash/fp/map'
-import split from 'lodash/fp/split'
+import getOr from "lodash/fp/getOr"
+import filter from "lodash/fp/filter"
+import reduce from "lodash/fp/reduce"
+import uniqueId from "lodash/fp/uniqueId"
+import size from "lodash/fp/size"
+import toLower from "lodash/fp/toLower"
+import flow from "lodash/fp/flow"
+import map from "lodash/fp/map"
+import split from "lodash/fp/split"
 
-import Sequelize from 'sequelize'
+import Sequelize from "sequelize"
 
 // src
 import {
@@ -23,8 +23,8 @@ import {
     createMutiple,
     destroy,
     update,
-    findAcross,
-} from '../utils'
+    findAcross
+} from "../utils"
 
 const Op = Sequelize.Op
 
@@ -37,58 +37,58 @@ async function rideCreation(
     shift,
     school_lat,
     school_lng,
-    school_id,
+    school_id
 ) {
     const reducedStudents = await reduce(async (final, { id, parent_id }) => {
-        const { lat = '', lng = '' } =
-            (await findOne('Parent', { parent_id })) || {}
-        createFBData('/students', `/${id}`, {
+        const { lat = "", lng = "" } =
+            (await findOne("Parent", { parent_id })) || {}
+        createFBData("/students", `/${id}`, {
             id,
             ride_id,
             driver_id,
             shift,
             route: [],
-            eta: '',
-            distance: '',
+            eta: "",
+            distance: ""
         })
         return {
             [id]: {
                 id,
                 parent_id,
                 student_location: { lat, lng },
-                status: 'waiting',
-            },
+                status: "waiting"
+            }
         }
     }, {})(student_list)
 
-    createFBData('/drivers', `/${driver_id}`, {
+    createFBData("/drivers", `/${driver_id}`, {
         driver_id,
         ride_id,
         shift,
         route: [],
-        eta: '',
-        distance: '',
-        nextLocation: { lat, lng },
+        eta: "",
+        distance: "",
+        nextLocation: { lat, lng }
     })
-    createFBData('/ride', `/${ride_id}`, {
+    createFBData("/ride", `/${ride_id}`, {
         ride_id,
         driver_id,
         shift,
         driver_location: { lat: driver_lat, lng: driver_lng },
-        status: 'inProgress',
+        status: "inProgress",
         school_location: { lat: school_lat, lng: school_lng },
-        students: reducedStudents,
+        students: reducedStudents
     })
 }
 
 function createRide(req, res) {
-    const { driver_id, shifts } = getOr({}, 'body')(req)
+    const { driver_id, shifts } = getOr({}, "body")(req)
     //  Return students for current driver and return pickup or dropoff for current shift
-    return findMultiple('Student', {
+    return findMultiple("Student", {
         driver_id,
         shift: {
-            [Op.or]: shifts,
-        },
+            [Op.or]: shifts
+        }
     })
         .then(students => {
             if (size(students) > 0) {
@@ -96,7 +96,7 @@ function createRide(req, res) {
                     filter(student => {
                         const { dataValues: studentValues } = student
                         const { status } = studentValues
-                        return toLower(status) === 'active'
+                        return toLower(status) === "active"
                     }),
                     map(filteredStudent => {
                         const {
@@ -105,10 +105,10 @@ function createRide(req, res) {
                             grade,
                             photo,
                             shift,
-                            parent_id,
+                            parent_id
                         } = filteredStudent
-                        return findOne('Parent', {
-                            parent_id,
+                        return findOne("Parent", {
+                            parent_id
                         }).then(parent => {
                             const { dataValues: parentValues } = parent
                             const {
@@ -117,7 +117,7 @@ function createRide(req, res) {
                                 address,
                                 lat,
                                 lng,
-                                email,
+                                email
                             } = parentValues
                             return {
                                 id,
@@ -131,18 +131,18 @@ function createRide(req, res) {
                                 address,
                                 lat,
                                 lng,
-                                email,
+                                email
                             }
                         })
-                    }),
+                    })
                 )(students)
                 return Promise.all(filteredStudents).then(response =>
-                    res.status(200).json({ status: 200, data: response }),
+                    res.status(200).json({ status: 200, data: response })
                 )
             }
             return res.status(200).json({
                 status: 404,
-                data: { message: 'No students Registered' },
+                data: { message: "No students Registered" }
             })
         })
         .catch(e => {
@@ -151,9 +151,14 @@ function createRide(req, res) {
 }
 
 function absenteeStudents(req, res, next) {
-    const { id: driver_id } = getOr({}, 'params')(req)
+    const { driver_id, shifts } = getOr({}, "body")(req)
 
-    return findMultiple('Student', { driver_id })
+    return findMultiple("Student", {
+        driver_id,
+        shift: {
+            [Op.or]: shifts
+        }
+    })
         .then(students => {
             if (size(students) > 0) {
                 const mappedStudents = map(student => {
@@ -161,11 +166,11 @@ function absenteeStudents(req, res, next) {
                     return studentValues
                 })(students)
                 const filteredResponse = filter(
-                    ({ status }) => toLower(status) === 'leave',
+                    ({ status }) => toLower(status) === "leave"
                 )(mappedStudents)
                 return res.status(200).json({
                     status: 200,
-                    data: filteredResponse,
+                    data: filteredResponse
                 })
             }
             return res.status(200).json({ status: 200, data: [] })
@@ -184,10 +189,10 @@ function startRide(req, res) {
         shift,
         school_lat,
         school_lng,
-        school_id,
-    } = getOr({}, 'body')(req)
+        school_id
+    } = getOr({}, "body")(req)
 
-    const ride_id = parseInt(uniqueId(''), 10)
+    const ride_id = parseInt(uniqueId(""), 10)
     // rideCreation(
     //     ride_id,
     //     driver_id,
@@ -203,44 +208,46 @@ function startRide(req, res) {
         status: 200,
         data: {
             id: ride_id,
-            ride_status: 'inProgress',
-            message: 'Ride Started',
-        },
+            ride_status: "inProgress",
+            message: "Ride Started"
+        }
     })
 }
 
 function updateDriverLocation(req, res) {
     // TODO: Insert Logic for update driver
-    const { ride_status, ride_id, driver_id, lat, lon } = getOr({}, 'body')(req)
+    const { ride_status, ride_id, driver_id, lat, lon } = getOr({}, "body")(
+        req
+    )
 
     // updateFBData('/ride', `/${ride_id}`, { driver_location: { lat, lng } })
     return res.status(200).json({
         status: 200,
         data: {
             id: ride_id,
-            status: 'Success',
-            message: 'Location Updated',
-        },
+            status: "Success",
+            message: "Location Updated"
+        }
     })
 }
 
 function endRide(req, res) {
-    const { ride_id } = getOr({}, 'body')(req)
+    const { ride_id } = getOr({}, "body")(req)
     // updateFBData('/ride', `/${ride_id}`, { status: 'completed' })
     return res.status(200).json({
         status: 200,
         data: {
             id: ride_id,
-            status: 'EndRide',
-            message: 'Ride Ended',
-        },
+            status: "EndRide",
+            message: "Ride Ended"
+        }
     })
 }
 
 function arrivedAtLocation(req, res) {
     // TODO: Insert Logic for when driver arrived at kid location
     // TODO: Send notification to parent to pickup or drop child
-    const { ride_id, student_id, parent_id, shift } = getOr({}, 'body')(req)
+    const { ride_id, student_id, parent_id, shift } = getOr({}, "body")(req)
 
     // updateFBData('/ride', `/${ride_id}/students/${student_id}`, {
     //     status: 'ready',
@@ -249,16 +256,16 @@ function arrivedAtLocation(req, res) {
         status: 200,
         data: {
             id: ride_id,
-            student_status: shift === 'morning' ? 'pickup' : 'drop',
-            message: shift === 'morning' ? 'Driver Is Here' : 'Kid is Home',
-        },
+            student_status: shift === "morning" ? "pickup" : "drop",
+            message: shift === "morning" ? "Driver Is Here" : "Kid is Home"
+        }
     })
 }
 
 function confirmDropOrPickup(req, res) {
     // TODO: Insert Logic for parent when driver arrived at kid location
     // TODO: Send notification to driver about confirmation
-    const { ride_id, student_id, parent_id, shift } = getOr({}, 'body')(req)
+    const { ride_id, student_id, parent_id, shift } = getOr({}, "body")(req)
     // updateFBData('/ride', `/${ride_id}/students/${student_id}`, {
     //     status: 'picked',
     // })
@@ -266,12 +273,12 @@ function confirmDropOrPickup(req, res) {
         status: 200,
         data: {
             id: ride_id,
-            student_status: shift === 'morning' ? 'dropped' : 'recieved',
+            student_status: shift === "morning" ? "dropped" : "recieved",
             message:
-                shift === 'morning'
-                    ? 'Kid Dropped for School'
-                    : 'Kid Returned From Home',
-        },
+                shift === "morning"
+                    ? "Kid Dropped for School"
+                    : "Kid Returned From Home"
+        }
     })
 }
 
@@ -282,5 +289,5 @@ export default {
     endRide,
     arrivedAtLocation,
     confirmDropOrPickup,
-    absenteeStudents,
+    absenteeStudents
 }
