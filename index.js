@@ -32,7 +32,6 @@ cron.schedule('0 */15 * * * 5', halfDayTask, {
     timezone: 'Asia/Baghdad',
 })
 
-sendEmail('sadain.abbasi@gmail.com', 'Check', 'Check', '<div>Check</div>')
 // module.parent check is required to support mocha watch
 if (!module.parent) {
     // listen on port config.port
