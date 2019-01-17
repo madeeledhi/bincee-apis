@@ -3,7 +3,13 @@ import app from './config/express'
 /* eslint-disable no-unused-vars */
 import db from './config/sequelize'
 import cron from 'node-cron'
-import { task, morningTask, eveningTask, halfDayTask } from './server/utils'
+import {
+    task,
+    morningTask,
+    eveningTask,
+    halfDayTask,
+    sendEmail,
+} from './server/utils'
 
 const debug = require('debug')('bincee-api:index')
 /* eslint-enable no-unused-vars */
@@ -25,6 +31,8 @@ cron.schedule('0 */15 * * * 5', halfDayTask, {
     scheduled: true,
     timezone: 'Asia/Baghdad',
 })
+
+sendEmail('sadain.abbasi@gmail.com', 'Check', 'Check', '<div>Check</div>')
 // module.parent check is required to support mocha watch
 if (!module.parent) {
     // listen on port config.port
