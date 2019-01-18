@@ -117,6 +117,7 @@ function createNotification(req, res, next) {
                         sendNotification(`${type}-${school_id}`, {
                             title,
                             description,
+                            type: 'Alert',
                         })
                         return res.status(200).json({
                             status: 200,
@@ -132,15 +133,27 @@ function createNotification(req, res, next) {
                                         student_id,
                                         announcement_id,
                                     }).then(notify => {
-                                        sendNotification(
-                                            `${type}-${parent_id}`,
-                                            {
-                                                title,
-                                                student: fullname,
-                                                description,
-                                            },
-                                        )
-                                        return notify
+                                        return getFBData(
+                                            'token',
+                                            `${parent_id}`,
+                                        ).then(response => {
+                                            const { token } = response
+                                            if (token) {
+                                                return sendBulkNotifications(
+                                                    token,
+                                                    {
+                                                        title,
+                                                        student: fullname,
+                                                        description,
+                                                        type: 'Announcement',
+                                                    },
+                                                ).then(() => {
+                                                    return notify
+                                                })
+                                            } else {
+                                                return notify
+                                            }
+                                        })
                                     })
                                 },
                             )(studentArray)

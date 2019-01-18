@@ -17,7 +17,7 @@ import APIError from '../server/helpers/APIError'
 import jwt from '../server/helpers/jwt'
 import errorHandler from '../server/helpers/errorHandler'
 import fs from 'fs'
-// import { intializeFirebase, registerListeners } from '../server/utils'
+import { intializeFirebase } from '../server/utils'
 
 const app = express()
 
@@ -35,7 +35,7 @@ if (config.env === 'development') {
     app.use(logger('dev'))
 }
 
-// intializeFirebase()
+intializeFirebase()
 
 // registerListeners()
 

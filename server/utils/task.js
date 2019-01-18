@@ -9,7 +9,13 @@ import keys from 'lodash/fp/keys'
 import moment from 'moment-timezone'
 
 // src
-import { update, listAll, findMultiple, sendShiftNotification } from '../utils'
+import {
+    update,
+    listAll,
+    findMultiple,
+    sendShiftNotification,
+    getFBData,
+} from '../utils'
 
 export function task() {
     const date = moment().tz('Asia/Baghdad')
@@ -63,9 +69,14 @@ export function morningTask() {
                             title: `${shift_name} has Started`,
                             body: `It's Time to Pick up ${fullname}`,
                             data: { studentId: student_id },
-                            type: shift_name,
+                            type: 'Evening1',
                         }
-                        sendShiftNotification(parent_id, notification)
+                        getFBData('token', `${parent_id}`).then(response => {
+                            const { token } = response
+                            if (token) {
+                                sendShiftNotification(parent_id, notification)
+                            }
+                        })
                     })(students)
                 })
             }

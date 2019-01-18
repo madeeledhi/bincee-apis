@@ -77,14 +77,23 @@ export function updateMutipleFBChilds(pathArray) {
     })
 }
 
-export function getFBData(path, child) {
-    const db = fireBaseAdmin.database()
-    return db
-        .ref(path)
-        .child(child)
-        .once('value', data => {
-            return data
-        })
+export function getFBData(collection, document) {
+    const db = fireBaseAdmin.firestore()
+    return new Promise((resolve, reject) => {
+        db.collection(collection)
+            .doc(document)
+            .get()
+            .then(response => {
+                if (!response.exists) {
+                    reject(new Error('Document Doesnot Exist'))
+                } else {
+                    resolve(response.data())
+                }
+            })
+            .catch(error => {
+                reject(error)
+            })
+    })
 }
 
 // TODO: Attach all listeners to app for realtime database events
