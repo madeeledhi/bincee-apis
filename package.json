@@ -70,6 +70,7 @@
         "express-jwt": "5.1.0",
         "express-validation": "1.0.1",
         "express-winston": "2.1.2",
+        "fcm-node": "false1.3.0",
         "firebase-admin": "false6.1.0",
         "fs": "false0.0.1-security",
         "gulp": "false4.0.0",

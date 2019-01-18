@@ -206,11 +206,13 @@ function testNotification(req, res, next) {
         const notification = {
             title: `Test Notification`,
             body: `Check Notification Recieved`,
-            data: { studentId: 1 },
             type: 'Evening1',
         }
         if (token) {
-            return sendBulkNotifications(token, notification).then(() => {
+            return sendBulkNotifications(token, notification, {
+                studentId: 1,
+            }).then(resp => {
+                console.log('resp: ', resp)
                 return res.status(200).json({
                     status: 200,
                     data: { message: 'Notifications sent successfully' },
