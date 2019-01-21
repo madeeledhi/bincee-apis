@@ -108,35 +108,34 @@ function getDriverData(req, res, next) {
                 return findOne('School', { school_id }).then(school => {
                     if (school) {
                         const { dataValues: schoolValues } = school
-                        return findOne('Bus', { driver_id: id }).then(bus => {
-                            if (bus) {
-                                const { dataValues: busValues } = bus
-                                const {
-                                    registration_no,
-                                    description,
-                                } = busValues
-                                return res.status(200).json({
-                                    status: 200,
-                                    data: {
-                                        ...driverValues,
-                                        school: schoolValues,
-                                        bus: {
-                                            registration_no,
-                                            description,
+                        return findMultiple('Bus', { driver_id: id }).then(
+                            buses => {
+                                if (size(buses) > 0) {
+                                    const mappedBusses = map(bus => {
+                                        const { dataValues: busValues } = bus
+                                        return busValues
+                                    })(buses)
+
+                                    return res.status(200).json({
+                                        status: 200,
+                                        data: {
+                                            ...driverValues,
+                                            school: schoolValues,
+                                            buses: mappedBusses,
                                         },
-                                    },
-                                })
-                            } else {
-                                return res.status(200).json({
-                                    status: 200,
-                                    data: {
-                                        ...driverValues,
-                                        school: schoolValues,
-                                        bus: {},
-                                    },
-                                })
-                            }
-                        })
+                                    })
+                                } else {
+                                    return res.status(200).json({
+                                        status: 200,
+                                        data: {
+                                            ...driverValues,
+                                            school: schoolValues,
+                                            buses: [],
+                                        },
+                                    })
+                                }
+                            },
+                        )
                     } else {
                         return res.status(200).json({
                             status: 200,
