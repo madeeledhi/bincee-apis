@@ -56,7 +56,8 @@ function createStudent(req, res, next) {
     const {
         fullname,
         grade,
-        shift,
+        shift_morning,
+        shift_evening,
         parent_id,
         driver_id,
         status,
@@ -68,7 +69,8 @@ function createStudent(req, res, next) {
             return createOne('Student', {
                 fullname,
                 grade,
-                shift,
+                shift_morning,
+                shift_evening,
                 parent_id,
                 driver_id,
                 status,
@@ -204,7 +206,7 @@ function createLeave(req, res, next) {
     const getInt = data => (isNumber(data) ? parseInt(data) : '')
     if (!(typeof getInt(to) === 'number' || typeof getInt(from) === 'number')) {
         return res.status(200).json({
-            status: 401,
+            status: 400,
             data: { message: 'Invalide from/to date' },
         })
     }
@@ -451,7 +453,7 @@ function createGrade(req, res, next) {
     })
 }
 function createShift(req, res, next) {
-    const { shift_name, start_time, end_time } = getOr({}, 'body')(req)
+    const { shift_name, start_time, end_time, type } = getOr({}, 'body')(req)
     const { authorization } = getOr({}, 'headers')(req)
     const token = flow(
         split(' '),
@@ -460,11 +462,12 @@ function createShift(req, res, next) {
     return findOne('User', { token }).then(resUser => {
         if (resUser) {
             const { dataValues } = resUser
-            const { id, type } = dataValues
+            const { id } = dataValues
             return findOne('Shift', {
                 shift_name,
                 start_time,
                 end_time,
+                type,
                 school_id: id,
             })
                 .then(resShift => {
@@ -473,6 +476,7 @@ function createShift(req, res, next) {
                             shift_name,
                             start_time,
                             end_time,
+                            type,
                             school_id: id,
                         }).then(shift => {
                             return res
@@ -861,7 +865,8 @@ function studentList(req, res, next) {
                                     parent_id,
                                     driver_id,
                                     grade: grade_id,
-                                    shift: shift_id,
+                                    shift_morning,
+                                    shift_evening,
                                 } = studentValues
                                 return findOne('Driver', {
                                     driver_id,
@@ -873,27 +878,35 @@ function studentList(req, res, next) {
                                             grade_id,
                                         }).then(grade => {
                                             return findOne('Shift', {
-                                                shift_id,
-                                            }).then(shift => {
-                                                return {
-                                                    ...studentValues,
-                                                    grade_name: grade
-                                                        ? grade.dataValues
-                                                              .grade_section
-                                                        : '',
-                                                    shift_name: shift
-                                                        ? shift.dataValues
-                                                              .shift_name
-                                                        : '',
-                                                    driver_name: driver
-                                                        ? driver.dataValues
-                                                              .fullname
-                                                        : '',
-                                                    parent_name: parent
-                                                        ? parent.dataValues
-                                                              .fullname
-                                                        : '',
-                                                }
+                                                shift_id: shift_morning,
+                                            }).then(shift1 => {
+                                                return findOne('Shift', {
+                                                    shift_id: shift_evening,
+                                                }).then(shift2 => {
+                                                    return {
+                                                        ...studentValues,
+                                                        grade_name: grade
+                                                            ? grade.dataValues
+                                                                  .grade_section
+                                                            : '',
+                                                        shift_morning_name: shift1
+                                                            ? shift1.dataValues
+                                                                  .shift_name
+                                                            : '',
+                                                        shift_evening_name: shift2
+                                                            ? shift2.dataValues
+                                                                  .shift_name
+                                                            : '',
+                                                        driver_name: driver
+                                                            ? driver.dataValues
+                                                                  .fullname
+                                                            : '',
+                                                        parent_name: parent
+                                                            ? parent.dataValues
+                                                                  .fullname
+                                                            : '',
+                                                    }
+                                                })
                                             })
                                         })
                                     })
@@ -923,19 +936,23 @@ function studentList(req, res, next) {
             return next(e)
         })
 }
+
 function driverBusList(req, res, next) {
     const { id } = getOr({}, 'params')(req)
     return findOne('Driver', { driver_id: id })
         .then(driver => {
             if (driver) {
                 const { dataValues: driverValues } = driver
-                return findOne('Bus', { driver_id: id }).then(bus => {
-                    if (bus) {
-                        const { dataValues: busValues } = bus
-                        const data = { ...driverValues, bus: busValues }
+                return findMultiple('Bus', { driver_id: id }).then(buses => {
+                    if (size(buses) > 0) {
+                        const busValues = map(bus => {
+                            const { dataValues: busValues } = bus
+                            return busValues
+                        })(buses)
+                        const data = { ...driverValues, buses: busValues }
                         return res.status(200).json({ status: 200, data })
                     } else {
-                        const data = { ...driverValues, bus: {} }
+                        const data = { ...driverValues, buses: {} }
                         return res.status(200).json({ status: 200, data })
                     }
                 })

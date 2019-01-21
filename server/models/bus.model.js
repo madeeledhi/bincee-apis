@@ -25,7 +25,7 @@ const Bus = (sequelize, DataTypes) => {
             driver_id: {
                 type: DataTypes.INTEGER,
                 allowNull: true,
-                unique: true,
+                unique: false,
                 references: { model: 'Driver', key: 'driver_id' },
             },
         },

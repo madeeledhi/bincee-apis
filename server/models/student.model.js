@@ -23,9 +23,15 @@ const Student = (sequelize, DataTypes) => {
                 references: { model: 'Grade', key: 'grade_id' },
             },
             photo: { type: DataTypes.STRING, allowNull: true, unique: false },
-            shift: {
+            shift_morning: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
+                allowNull: true,
+                unique: false,
+                references: { model: 'Shift', key: 'shift_id' },
+            },
+            shift_evening: {
+                type: DataTypes.INTEGER,
+                allowNull: true,
                 unique: false,
                 references: { model: 'Shift', key: 'shift_id' },
             },

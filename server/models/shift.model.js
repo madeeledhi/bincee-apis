@@ -16,6 +16,11 @@ const Shift = (sequelize, DataTypes) => {
                 allowNull: false,
                 unique: false,
             },
+            type: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                unique: false,
+            },
             start_time: { type: DataTypes.TIME, allowNull: false },
             end_time: { type: DataTypes.TIME, allowNull: false },
             school_id: {

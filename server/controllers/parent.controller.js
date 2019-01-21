@@ -8,6 +8,8 @@ import filter from 'lodash/fp/filter'
 import uniqBy from 'lodash/fp/uniqBy'
 import flow from 'lodash/fp/flow'
 
+import Sequelize from 'sequelize'
+
 // src
 import {
     findOne,
@@ -21,6 +23,7 @@ import {
     getFBData,
 } from '../utils'
 import config from '../../config/config'
+const Op = Sequelize.Op
 
 function getUserData(req, res, next) {
     const { id: parent_id } = getOr({}, 'params')(req)
@@ -40,31 +43,25 @@ function getUserData(req, res, next) {
                                 const { dataValues: studentValue } = student
                                 const {
                                     grade: grade_id,
-                                    shift: shift_id,
+                                    shift_morning,
+                                    shift_evening,
                                     driver_id,
-                                } = student
+                                } = studentValue
                                 return findOne('Driver', {
                                     driver_id,
                                 }).then(driver => {
-                                    return findOne('Shift', {
-                                        shift_id,
-                                    }).then(shift => {
-                                        return findOne('Grade', {
-                                            grade_id,
-                                        }).then(grade => {
-                                            return {
-                                                ...studentValue,
-                                                grade: grade
-                                                    ? grade.dataValues
-                                                    : {},
-                                                shift: shift
-                                                    ? shift.dataValues
-                                                    : {},
-                                                driver: driver
-                                                    ? driver.dataValues
-                                                    : {},
-                                            }
-                                        })
+                                    return findOne('Grade', {
+                                        grade_id,
+                                    }).then(grade => {
+                                        return {
+                                            ...studentValue,
+                                            grade: grade
+                                                ? grade.dataValues
+                                                : {},
+                                            driver: driver
+                                                ? driver.dataValues
+                                                : {},
+                                        }
                                     })
                                 })
                             })(students)
@@ -170,8 +167,12 @@ function getDriverShifts(req, res, next) {
             if (size(students) > 0) {
                 const mappedShifts = map(student => {
                     const { dataValues: studentValues } = student
-                    const { shift } = studentValues
-                    return findOne('Shift', { shift_id: shift }).then(shift => {
+                    const { shift_morning, shift_evening } = studentValues
+                    return findOne('Shift', {
+                        shift_id: {
+                            [Op.or]: [shift_morning, shift_evening],
+                        },
+                    }).then(shift => {
                         if (shift) {
                             const { dataValues: shiftValues } = shift
                             return shiftValues

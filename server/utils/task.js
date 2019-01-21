@@ -14,6 +14,7 @@ import {
     listAll,
     findMultiple,
     sendShiftNotification,
+    destroy,
     getFBData,
 } from '../utils'
 
@@ -44,7 +45,7 @@ export function morningTask() {
         .format('HH:mm:ss')
 
     console.log('Morning Task', currentTime)
-    listAll('Shift').then(shifts => {
+    findMultiple('Shift', { type: 'Morning' }).then(shifts => {
         map(shift => {
             const { dataValues: shiftValue } = shift
             const {
@@ -52,12 +53,16 @@ export function morningTask() {
                 shift_name,
                 start_time,
                 end_time,
+                type,
                 school_id,
             } = shiftValue
 
             console.log('Shift', shift_id, currentTime, start_time)
             if (start_time === currentTime) {
-                findMultiple('Student', { shift: shift_id }).then(students => {
+                findMultiple('Student', {
+                    shift_morning: shift_id,
+                    status: 'Active',
+                }).then(students => {
                     map(student => {
                         const { dataValues: studentValues } = student
                         const {
@@ -67,9 +72,9 @@ export function morningTask() {
                         } = studentValues
                         const notification = {
                             title: `${shift_name} has Started`,
-                            body: `It's Time to Pick up ${fullname}`,
+                            body: `It's Time to Drop ${fullname} for School`,
                             data: { studentId: student_id },
-                            type: 'Evening1',
+                            type: 'Morning1',
                         }
                         getFBData('token', `${parent_id}`).then(response => {
                             const { token } = response
@@ -86,11 +91,107 @@ export function morningTask() {
 
 export function eveningTask() {
     const date = moment().tz('Asia/Baghdad')
-    console.log('Evening Task', date)
+    const currentTime = date
+        .set({ second: 0, millisecond: 0 })
+        .format('HH:mm:ss')
+
+    console.log('Evening Task', currentTime)
+    findMultiple('Shift', { type: 'Evening' }).then(shifts => {
+        map(shift => {
+            const { dataValues: shiftValue } = shift
+            const {
+                shift_id,
+                shift_name,
+                start_time,
+                end_time,
+                type,
+                school_id,
+            } = shiftValue
+
+            console.log('Shift', shift_id, currentTime, start_time)
+            if (start_time === currentTime) {
+                findMultiple('Student', {
+                    shift_evening: shift_id,
+                    status: 'Active',
+                }).then(students => {
+                    map(student => {
+                        const { dataValues: studentValues } = student
+                        const {
+                            parent_id,
+                            id: student_id,
+                            fullname,
+                        } = studentValues
+                        const notification = {
+                            title: `${shift_name} has Started`,
+                            body: `School is Over, It's Time for ${fullname} to be Picked up`,
+                            data: { studentId: student_id },
+                            type: 'Evening1',
+                        }
+                        getFBData('token', `${parent_id}`).then(response => {
+                            const { token } = response
+                            if (token) {
+                                sendShiftNotification(parent_id, notification)
+                            }
+                        })
+                    })(students)
+                })
+            }
+        })(shifts)
+    })
 }
 
 export function halfDayTask() {
     const date = moment().tz('Asia/Baghdad')
+    const currentTime = date
+        .set({
+            second: 0,
+            millisecond: 0,
+        })
+        .format('HH:mm:ss')
 
-    console.log('Half Day Task', date)
+    console.log('half Day Task', currentTime)
+    findMultiple('Shift', {
+        type: 'Evening',
+    }).then(shifts => {
+        map(shift => {
+            const { dataValues: shiftValue } = shift
+            const {
+                shift_id,
+                shift_name,
+                start_time,
+                end_time,
+                type,
+                school_id,
+            } = shiftValue
+
+            console.log('Shift', shift_id, currentTime, start_time)
+            if (currentTime === '12:00:00') {
+                findMultiple('Student', {
+                    shift_evening: shift_id,
+                    status: 'Active',
+                }).then(students => {
+                    map(student => {
+                        const { dataValues: studentValues } = student
+                        const {
+                            parent_id,
+                            id: student_id,
+                            fullname,
+                        } = studentValues
+                        const notification = {
+                            title: `${shift_name} has Started`,
+                            body: `School is Over, It's Time for ${fullname} to be Picked up`,
+                            data: { studentId: student_id },
+                            type: 'Evening1',
+                        }
+                        getFBData('token', `${parent_id}`).then(response => {
+                            const { token } = response
+                            if (token) {
+                                sendShiftNotification(parent_id, notification)
+                            }
+                        })
+                    })(students)
+                })
+            }
+        })(shifts)
+    })
 }
