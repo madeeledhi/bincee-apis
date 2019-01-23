@@ -45,12 +45,13 @@ function createRide(req, res) {
                             shift_morning,
                             shift_evening,
                         } = studentValues
+
                         return (
                             toLower(status) === 'active' &&
                             ((shift_morning &&
-                                includes(shift_morning)(shifts)) ||
+                                includes(`${shift_morning}`)(shifts)) ||
                                 (shift_evening &&
-                                    includes(shift_evening)(shifts)))
+                                    includes(`${shift_evening}`)(shifts)))
                         )
                     }),
                     map(filteredStudent => {
@@ -122,8 +123,10 @@ function absenteeStudents(req, res, next) {
                 const filteredResponse = filter(
                     ({ status, shift_evening, shift_morning }) =>
                         toLower(status) === 'leave' &&
-                        ((shift_morning && includes(shift_morning)(shifts)) ||
-                            (shift_evening && includes(shift_evening)(shifts))),
+                        ((shift_morning &&
+                            includes(`${shift_morning}`)(shifts)) ||
+                            (shift_evening &&
+                                includes(`${shift_evening}`)(shifts))),
                 )(mappedStudents)
                 return res.status(200).json({
                     status: 200,
