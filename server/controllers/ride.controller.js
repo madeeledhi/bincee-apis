@@ -60,8 +60,8 @@ function createRide(req, res) {
                             fullname,
                             grade,
                             photo,
-                            shift_morning,
-                            shift_evening,
+                            shift_morning: studentShiftMorning,
+                            shift_evening: studentShiftEvening,
                             parent_id,
                         } = filteredStudent
                         return findOne('Parent', {
@@ -82,8 +82,8 @@ function createRide(req, res) {
                                 fullname,
                                 grade,
                                 photo,
-                                shift_morning,
-                                shift_evening,
+                                shift_morning: studentShiftMorning,
+                                shift_evening: studentShiftEvening,
                                 parentname,
                                 phone_no,
                                 address,
