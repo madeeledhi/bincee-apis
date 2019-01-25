@@ -14,6 +14,7 @@ import {
     update,
     destroy,
     sendEmail,
+    sendSMS,
 } from '../utils'
 import config from '../../config/config'
 
@@ -141,13 +142,10 @@ function resetPassword(req, res, next) {
                 return findOne(type, { phone_no }).then(details => {
                     if (details) {
                         const password = 'Changeme.1'
-                        // const html = `<div><b>username</b> : ${username} </br><b>password</b> : ${password} </div>`
-                        // sendEmail(
-                        //     email,
-                        //     'Password Reset Successfully',
-                        //     'Sign in to bincee using credentials',
-                        //     html,
-                        // )
+                        sendSMS(
+                            phone_no,
+                            `Password Reset, Your new Password is ${password}`,
+                        )
                         return update('User', { id }, { password }).then(user =>
                             res.status(200).json({
                                 status: 200,

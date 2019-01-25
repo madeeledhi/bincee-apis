@@ -96,6 +96,7 @@
         "sequelize-cli": "^5.2.0",
         "supertest": "2.0.1",
         "supertest-as-promised": "4.0.2",
+        "twilio": "false3.27.1",
         "winston": "2.3.0"
     },
     "devDependencies": {

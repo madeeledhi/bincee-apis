@@ -3,13 +3,7 @@ import app from './config/express'
 /* eslint-disable no-unused-vars */
 import db from './config/sequelize'
 import cron from 'node-cron'
-import {
-    task,
-    morningTask,
-    eveningTask,
-    halfDayTask,
-    sendEmail,
-} from './server/utils'
+import { task, morningTask, eveningTask, halfDayTask } from './server/utils'
 
 const debug = require('debug')('bincee-api:index')
 /* eslint-enable no-unused-vars */

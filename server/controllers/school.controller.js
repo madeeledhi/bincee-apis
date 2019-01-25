@@ -25,6 +25,7 @@ import {
     findAcross,
     sendNotification,
     sendEmail,
+    sendSMS,
 } from '../utils'
 import config from '../../config/config'
 import Announcement from '../models/announcement.model'
@@ -278,6 +279,10 @@ function createDriver(req, res, next) {
                                 ...driver,
                             }).then(savedDriver => {
                                 const { dataValues: driverValues } = savedDriver
+                                sendSMS(
+                                    phone_no,
+                                    `Welcome to Bincee, Your Account Username: ${username} with Password: ${password} has been created`,
+                                )
                                 return res
                                     .status(200)
                                     .json({
