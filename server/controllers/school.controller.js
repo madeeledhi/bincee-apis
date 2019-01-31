@@ -131,7 +131,7 @@ function createNotification(req, res, next) {
                         const { id: announcement_id } = dataValues
                         if (size(studentArray) > 0) {
                             const multiply = map(
-                                ({ student_id, parent_id, fullname }) => {
+                                ({ id: student_id, parent_id, fullname }) => {
                                     return createOne('Notify', {
                                         student_id,
                                         announcement_id,
