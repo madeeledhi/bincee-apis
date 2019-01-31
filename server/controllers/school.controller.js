@@ -25,6 +25,7 @@ import {
     findAcross,
     sendNotification,
     sendEmail,
+    getFBData,
     sendSMS,
 } from '../utils'
 import config from '../../config/config'
