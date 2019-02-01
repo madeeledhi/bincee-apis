@@ -151,13 +151,11 @@ function createNotification(req, res, next) {
                                                         description,
                                                         type: 'Announcement',
                                                     },
-                                                ).then(() => {
-                                                    return notify
-                                                })
-                                            } else {
-                                                return notify
+                                                )
                                             }
                                         })
+
+                                        return notify
                                     })
                                 },
                             )(studentArray)
@@ -166,7 +164,7 @@ function createNotification(req, res, next) {
                                     status: 200,
                                     data: {
                                         announcement: dataValues,
-                                        notify: 'Notified Successfully',
+                                        notify,
                                     },
                                 }),
                             )
