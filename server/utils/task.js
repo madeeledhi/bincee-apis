@@ -45,7 +45,7 @@ export function morningTask() {
         .format('HH:mm:ss')
 
     console.log('Morning Task', currentTime)
-    findMultiple('Shift', { type: 'Morning' }).then(shifts => {
+    findMultiple('Shift', { type: 'Pickup' }).then(shifts => {
         map(shift => {
             const { dataValues: shiftValue } = shift
             const {
@@ -96,7 +96,7 @@ export function eveningTask() {
         .format('HH:mm:ss')
 
     console.log('Evening Task', currentTime)
-    findMultiple('Shift', { type: 'Evening' }).then(shifts => {
+    findMultiple('Shift', { type: 'Dropoff' }).then(shifts => {
         map(shift => {
             const { dataValues: shiftValue } = shift
             const {
@@ -151,7 +151,7 @@ export function halfDayTask() {
 
     console.log('half Day Task', currentTime)
     findMultiple('Shift', {
-        type: 'Evening',
+        type: 'Dropoff',
     }).then(shifts => {
         map(shift => {
             const { dataValues: shiftValue } = shift

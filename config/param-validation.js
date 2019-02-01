@@ -24,7 +24,6 @@ export default {
             username: Joi.string().required(),
             password: Joi.string().required(),
             name: Joi.string().required(),
-            address: Joi.string().required(),
             phone_no: Joi.string().required(),
         },
     },
