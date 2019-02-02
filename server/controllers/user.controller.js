@@ -171,6 +171,36 @@ function resetPassword(req, res, next) {
     })
 }
 
+function sendCredentials(req, res, next) {
+    const { username, password, email, phone_no, type } = getOr({}, 'body')(req)
+    if (type === 'Parent') {
+        const html = `<div><b>username</b> : ${username} </br><b>password</b> : ${password} </div>`
+        sendEmail(
+            email,
+            'Bincee Login Credentials',
+            'Sign in to bincee using credentials',
+            html,
+        )
+        return res.status(200).json({
+            status: 200,
+            data: {
+                message: 'Credentials have been sent to User`s email',
+            },
+        })
+    } else {
+        sendSMS(
+            phone_no,
+            `User Username: ${username} with Password: ${password} to Login`,
+        )
+        return res.status(200).json({
+            status: 200,
+            data: {
+                message: 'Credentials have been sent to User`s Phone Number',
+            },
+        })
+    }
+}
+
 /**
  * Get user list.
  * @property {number} req.query.skip - Number of users to be skipped.
@@ -226,4 +256,5 @@ export default {
     updateUser,
     list,
     removeUserById,
+    sendCredentials,
 }

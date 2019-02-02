@@ -13,6 +13,7 @@ router.route('/list').get(userCtrl.list)
 
 /** POST /api/users - Create new user */
 router.route('/passwordreset').post(userCtrl.resetPassword)
+router.route('/credentials').post(userCtrl.sendCredentials)
 
 router.route('/list').get(userCtrl.list)
 
