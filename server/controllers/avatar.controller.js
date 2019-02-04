@@ -22,7 +22,12 @@ const storage = multer.diskStorage({
 })
 
 function uploadAvatar(req, res) {
-    const upload = multer({ storage: storage }).single('image')
+    const upload = multer({
+        storage: storage,
+        limits: {
+            fileSize: 1000000000, //size of u file
+        },
+    }).single('image')
 
     return upload(req, res, err => {
         if (err instanceof multer.MulterError) {
