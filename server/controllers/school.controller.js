@@ -23,7 +23,6 @@ import {
     createMutiple,
     destroy,
     update,
-    findAcross,
     sendNotification,
     sendEmail,
     getFBData,
@@ -762,37 +761,60 @@ function busList(req, res, next) {
                 const { dataValues } = resUser
                 const { id, type } = dataValues
 
-                return findAcross('Bus', { school_id: id }, 'Driver').then(
-                    buses => {
-                        if (size(buses) > 0) {
-                            const busMap = map(bus => {
-                                const { dataValues: busValues } = bus
-                                const { driver_id } = busValues
-                                return findOne('Driver', {
-                                    driver_id,
-                                }).then(driver => {
-                                    return {
-                                        ...busValues,
-                                        driver_name: driver
-                                            ? driver.dataValues.fullname
-                                            : '',
-                                    }
+                return findMultiple('Driver', {
+                    school_id: id,
+                }).then(drivers => {
+                    if (size(drivers) > 0) {
+                        const mappedBuses = map(driver => {
+                            const { dataValues: driverValues } = driver
+                            const { driver_id } = driverValues
+                            return findMultiple('Bus', { driver_id }).then(
+                                bus => {
+                                    return bus
+                                },
+                            )
+                        })(drivers)
+                        return Promise.all(mappedBuses).then(buses => {
+                            if (size(buses) > 0) {
+                                const filteredBuses = flow(
+                                    flatten,
+                                    filter(b => b),
+                                )(buses)
+                                const busMap = map(bus => {
+                                    const { dataValues: busValues } = bus
+                                    console.log('bus:', bus)
+                                    const { driver_id } = busValues
+                                    return findOne('Driver', {
+                                        driver_id,
+                                    }).then(driver => {
+                                        return {
+                                            ...busValues,
+                                            driver_name: driver
+                                                ? driver.dataValues.fullname
+                                                : '',
+                                        }
+                                    })
+                                })(filteredBuses)
+                                return Promise.all(busMap).then(results => {
+                                    return res.status(200).json({
+                                        status: 200,
+                                        data: results,
+                                    })
                                 })
-                            })(buses)
-                            return Promise.all(busMap).then(results => {
+                            } else {
                                 return res.status(200).json({
-                                    status: 200,
-                                    data: results,
+                                    status: 404,
+                                    data: { message: 'No Bus Found' },
                                 })
-                            })
-                        } else {
-                            return res.status(200).json({
-                                status: 404,
-                                data: { message: 'No Bus Found' },
-                            })
-                        }
-                    },
-                )
+                            }
+                        })
+                    } else {
+                        return res.status(200).json({
+                            status: 404,
+                            data: { message: 'No Bus Found' },
+                        })
+                    }
+                })
             }
             return res
                 .status(200)
@@ -815,7 +837,7 @@ function gradeList(req, res, next) {
                 const { dataValues } = resUser
                 const { id, type } = dataValues
 
-                return findAcross('Grade', {
+                return findMultiple('Grade', {
                     school_id: id,
                 }).then(grade =>
                     res.status(200).json({ status: 200, data: grade }),
@@ -842,7 +864,7 @@ function shiftList(req, res, next) {
                 const { dataValues } = resUser
                 const { id, type } = dataValues
 
-                return findAcross('Shift', {
+                return findMultiple('Shift', {
                     school_id: id,
                 }).then(shift =>
                     res.status(200).json({ status: 200, data: shift }),
@@ -869,76 +891,107 @@ function studentList(req, res, next) {
                 const { dataValues } = resUser
                 const { id, type } = dataValues
                 //verify it
-                return findAcross('Student', { school_id: id }, 'Parent').then(
-                    students => {
-                        if (size(students) > 0) {
-                            const studentMaps = map(student => {
-                                const { dataValues: studentValues } = student
-                                const {
-                                    parent_id,
-                                    driver_id,
-                                    grade: grade_id,
-                                    shift_morning,
-                                    shift_evening,
-                                } = studentValues
-                                return findOne('Driver', {
-                                    driver_id,
-                                }).then(driver => {
-                                    return findOne('Parent', {
+                return findMultiple('Parent', {
+                    school_id: id,
+                }).then(parents => {
+                    if (size(parents) > 0) {
+                        const mappedStudents = map(mappedParent => {
+                            const {
+                                dataValues: mappedParentValues,
+                            } = mappedParent
+                            const { parent_id } = mappedParentValues
+                            return findMultiple('Student', { parent_id }).then(
+                                joinedStudents => {
+                                    return map(s => s.dataValues)(
+                                        joinedStudents,
+                                    )
+                                },
+                            )
+                        })(parents)
+                        return Promise.all(mappedStudents).then(students => {
+                            if (size(students) > 0) {
+                                const flatStudents = flatten(students)
+                                const studentMaps = map(student => {
+                                    const {
                                         parent_id,
-                                    }).then(parent => {
-                                        return findOne('Grade', {
-                                            grade_id,
-                                        }).then(grade => {
-                                            return findOne('Shift', {
-                                                shift_id: shift_morning,
-                                            }).then(shift1 => {
+                                        driver_id,
+                                        grade: grade_id,
+                                        shift_morning,
+                                        shift_evening,
+                                    } = student
+                                    return findOne('Driver', {
+                                        driver_id,
+                                    }).then(driver => {
+                                        return findOne('Parent', {
+                                            parent_id,
+                                        }).then(parent => {
+                                            return findOne('Grade', {
+                                                grade_id,
+                                            }).then(grade => {
                                                 return findOne('Shift', {
-                                                    shift_id: shift_evening,
-                                                }).then(shift2 => {
-                                                    return {
-                                                        ...studentValues,
-                                                        grade_name: grade
-                                                            ? grade.dataValues
-                                                                  .grade_section
-                                                            : '',
-                                                        shift_morning_name: shift1
-                                                            ? shift1.dataValues
-                                                                  .shift_name
-                                                            : '',
-                                                        shift_evening_name: shift2
-                                                            ? shift2.dataValues
-                                                                  .shift_name
-                                                            : '',
-                                                        driver_name: driver
-                                                            ? driver.dataValues
-                                                                  .fullname
-                                                            : '',
-                                                        parent_name: parent
-                                                            ? parent.dataValues
-                                                                  .fullname
-                                                            : '',
-                                                    }
+                                                    shift_id: shift_morning,
+                                                }).then(shift1 => {
+                                                    return findOne('Shift', {
+                                                        shift_id: shift_evening,
+                                                    }).then(shift2 => {
+                                                        return {
+                                                            ...student,
+                                                            grade_name: grade
+                                                                ? grade
+                                                                      .dataValues
+                                                                      .grade_section
+                                                                : '',
+                                                            shift_morning_name: shift1
+                                                                ? shift1
+                                                                      .dataValues
+                                                                      .shift_name
+                                                                : '',
+                                                            shift_evening_name: shift2
+                                                                ? shift2
+                                                                      .dataValues
+                                                                      .shift_name
+                                                                : '',
+                                                            driver_name: driver
+                                                                ? driver
+                                                                      .dataValues
+                                                                      .fullname
+                                                                : '',
+                                                            parent_name: parent
+                                                                ? parent
+                                                                      .dataValues
+                                                                      .fullname
+                                                                : '',
+                                                        }
+                                                    })
                                                 })
                                             })
                                         })
                                     })
+                                })(flatStudents)
+                                return Promise.all(studentMaps).then(result => {
+                                    return res.status(200).json({
+                                        status: 200,
+                                        data: result,
+                                    })
                                 })
-                            })(students)
-                            return Promise.all(studentMaps).then(result => {
+                            } else {
                                 return res.status(200).json({
-                                    status: 200,
-                                    data: result,
+                                    status: 404,
+                                    data: {
+                                        message: 'No Students Found',
+                                    },
                                 })
-                            })
-                        } else {
-                            return res.status(200).json({
-                                status: 404,
-                                data: { message: 'No Students Found' },
-                            })
-                        }
-                    },
-                )
+                            }
+                        })
+                    } else {
+                        return res.status(200).json({
+                            status: 404,
+                            data: {
+                                message: 'No Students Found',
+                            },
+                        })
+                    }
+                })
             }
             return res.status(200).json({
                 status: 404,
@@ -983,10 +1036,31 @@ function driverBusList(req, res, next) {
 function studentNotificationList(req, res, next) {
     const { id } = getOr({}, 'params')(req)
 
-    return findAcross('Announcement', { student_id: id }, 'Notify')
-        .then(announcements =>
-            res.status(200).json({ status: 200, data: announcements }),
-        )
+    return findMultiple('Notify', { student_id: id })
+        .then(announcements => {
+            if (size(announcements) > 0) {
+                const mappedAnnouncements = map(ann => {
+                    const { dataValues: annValues } = ann
+                    const { announcement_id } = annValues
+                    return findOne('Announcement', {
+                        id: announcement_id,
+                    }).then(notif => {
+                        return notif
+                    })
+                })(announcements)
+                return Promise.all(mappedAnnouncements).then(response => {
+                    return res.status(200).json({
+                        status: 200,
+                        data: response,
+                    })
+                })
+            } else {
+                return res.status(200).json({
+                    status: 404,
+                    data: { message: 'No Announcements Found' },
+                })
+            }
+        })
         .catch(e => {
             return next(e)
         })
@@ -1010,15 +1084,21 @@ function parentStudentNotifications(req, res, next) {
                 const notifications = map(student => {
                     const { dataValues: studentValues } = student
                     const { id: student_id } = studentValues
-                    return findAcross(
-                        'Announcement',
-                        { student_id },
-                        'Notify',
-                    ).then(announcements => {
-                        return map(ann => ({ ...ann.dataValues, student_id }))(
-                            announcements,
-                        )
-                    })
+                    return findMultiple('Notify', { student_id }).then(
+                        announcements => {
+                            const finalResponse = map(ann => {
+                                const { announcement_id } = ann.dataValues
+                                return findOne('Announcement', {
+                                    id: announcement_id,
+                                }).then(annn => ({
+                                    ...annn.dataValues,
+                                    student_id,
+                                }))
+                            })(announcements)
+
+                            return Promise.all(finalResponse).then(rest => rest)
+                        },
+                    )
                 })(students)
 
                 return Promise.all(notifications).then(response => {

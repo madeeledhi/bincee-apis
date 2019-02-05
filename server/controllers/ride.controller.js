@@ -24,7 +24,6 @@ import {
     createMutiple,
     destroy,
     update,
-    findAcross,
 } from '../utils'
 
 const Op = Sequelize.Op
