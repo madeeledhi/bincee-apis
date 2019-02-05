@@ -11,6 +11,7 @@ import keys from 'lodash/fp/keys'
 import filter from 'lodash/fp/filter'
 import isFinite from 'lodash/isFinite'
 import parseInt from 'lodash/parseInt'
+import flatten from 'lodash/fp/flatten'
 
 // src
 import {
@@ -1006,16 +1007,18 @@ function parentStudentNotifications(req, res, next) {
                         { student_id },
                         'Notify',
                     ).then(announcements => {
-                        return { [student_id]: announcements }
+                        return map(ann => ({ ...ann.dataValues, student_id }))(
+                            announcements,
+                        )
                     })
                 })(students)
 
                 return Promise.all(notifications).then(response => {
-                    const results = reduce((final, current) => {
-                        const [key] = keys(current)
-                        return { ...final, [key]: current[key] }
-                    }, {})(response)
-                    return res.status(200).json({ status: 200, data: results })
+                    const results = flatten(response)
+                    return res.status(200).json({
+                        status: 200,
+                        data: results,
+                    })
                 })
             } else {
                 return res.status(200).json({ status: 200, data: [] })
