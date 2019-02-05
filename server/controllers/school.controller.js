@@ -211,9 +211,17 @@ function createLeave(req, res, next) {
             data: { message: 'Invalide from/to date' },
         })
     }
+
+    if (from > to) {
+        return res.status(200).json({
+            status: 400,
+            data: { message: 'From_Date Cannot be After To_Date' },
+        })
+    }
     const day = 24 * 60 * 60
     const from_date = new Date(getInt(from) * 1000)
     const to_date = new Date((getInt(to) + day) * 1000)
+
     return findOne('Leaves', { from_date, to_date, student_id }).then(
         resLeave => {
             if (!resLeave) {
