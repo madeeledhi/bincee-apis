@@ -1090,22 +1090,21 @@ function parentStudentNotifications(req, res, next) {
                                 const { announcement_id } = ann.dataValues
                                 return findOne('Announcement', {
                                     id: announcement_id,
-                                }).then(annn => ({
-                                    ...annn.dataValues,
-                                    student_id,
-                                }))
+                                }).then(annn => annn.dataValues)
                             })(announcements)
 
-                            return Promise.all(finalResponse).then(rest => rest)
+                            return Promise.all(finalResponse).then(rest => ({
+                                student_id,
+                                data: rest,
+                            }))
                         },
                     )
                 })(students)
 
                 return Promise.all(notifications).then(response => {
-                    const results = flatten(response)
                     return res.status(200).json({
                         status: 200,
-                        data: results,
+                        data: response,
                     })
                 })
             } else {
