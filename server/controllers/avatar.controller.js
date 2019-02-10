@@ -7,9 +7,26 @@ import uniqueId from 'lodash/fp/uniqueId'
 import multer from 'multer'
 
 // src
-import { createFBData } from '../utils'
+import { createFBData, makeUID } from '../utils'
 
-const staticPath = path.join(__dirname, '../public/images')
+const staticPath = path.join(__dirname, '../../../images')
+
+function checkFileType(file, cb) {
+    // Allowed ext
+    const filetypes = /jpeg|jpg|png/
+    // Check ext
+    const extname = filetypes.test(
+        path.extname(file.originalname).toLowerCase(),
+    )
+    // Check mime
+    const mimetype = filetypes.test(file.mimetype)
+
+    if (mimetype && extname) {
+        return cb(null, true)
+    } else {
+        cb('Error: Images Only!')
+    }
+}
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -17,7 +34,7 @@ const storage = multer.diskStorage({
     },
     filename: (req, file, cb) => {
         console.log('request: ', file)
-        cb(null, uniqueId('') + file.originalname)
+        cb(null, makeUID() + file.originalname)
     },
 })
 
@@ -26,6 +43,9 @@ function uploadAvatar(req, res) {
         storage: storage,
         limits: {
             fileSize: 1000000000, //size of u file
+        },
+        fileFilter: (req, file, cb) => {
+            checkFileType(file, cb)
         },
     }).single('image')
 
@@ -44,7 +64,7 @@ function uploadAvatar(req, res) {
             console.log('error: ', err)
             return res.status(200).json({
                 status: 500,
-                data: { message: 'System Error Occured while uploading' },
+                data: { message: err },
             })
         }
 

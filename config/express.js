@@ -17,19 +17,23 @@ import APIError from '../server/helpers/APIError'
 import jwt from '../server/helpers/jwt'
 import errorHandler from '../server/helpers/errorHandler'
 import fs from 'fs'
+import request from 'request'
 import { intializeFirebase } from '../server/utils'
 
 const app = express()
 
-const staticPath = path.join(__dirname, '../server/public/images')
+const staticPath = path.join(__dirname, '../../images')
 console.log('static path: ', staticPath)
 
 if (!fs.existsSync(staticPath)) {
-    fs.mkdirSync(path.join(__dirname, '../server/public'))
-    fs.mkdirSync(path.join(__dirname, '../server/public/images'))
+    fs.mkdirSync(path.join(__dirname, '../../images'))
 }
 
 app.use('/images', express.static(staticPath))
+
+app.get('/images/*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../user.png'))
+})
 
 if (config.env === 'development') {
     app.use(logger('dev'))
@@ -80,6 +84,7 @@ const baseUrl = '/'
 app.use(`${baseUrl}`, routes)
 
 // catch 404 and forward to error handler
+
 app.use((req, res, next) => {
     const err = new APIError('API not found', httpStatus.NOT_FOUND)
     return next(err)
