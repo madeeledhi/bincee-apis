@@ -19,7 +19,7 @@ import {
 } from '../utils'
 
 export function task() {
-    const date = moment().tz('Asia/Baghdad')
+    const date = moment()
     update('Student', { status: 'Leave' }, { status: 'Active' }).then(() => {
         listAll('Leaves').then(leaves => {
             map(leave => {
@@ -90,7 +90,7 @@ export function morningTask() {
 }
 
 export function eveningTask() {
-    const date = moment()
+    const date = moment().tz('Asia/Baghdad')
     const currentTime = date
         .set({ second: 0, millisecond: 0 })
         .format('HH:mm:ss')
