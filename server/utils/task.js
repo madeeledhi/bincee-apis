@@ -90,7 +90,7 @@ export function morningTask() {
 }
 
 export function eveningTask() {
-    const date = moment().tz('Asia/Baghdad')
+    const date = moment()
     const currentTime = date
         .set({ second: 0, millisecond: 0 })
         .format('HH:mm:ss')
