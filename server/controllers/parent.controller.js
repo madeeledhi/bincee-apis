@@ -7,6 +7,7 @@ import size from 'lodash/fp/size'
 import filter from 'lodash/fp/filter'
 import uniqBy from 'lodash/fp/uniqBy'
 import flow from 'lodash/fp/flow'
+import flatten from 'lodash/fp/flatten'
 
 import Sequelize from 'sequelize'
 
@@ -167,21 +168,24 @@ function getDriverShifts(req, res, next) {
                 const mappedShifts = map(student => {
                     const { dataValues: studentValues } = student
                     const { shift_morning, shift_evening } = studentValues
-                    return findOne('Shift', {
+                    return findMultiple('Shift', {
                         shift_id: {
                             [Op.or]: [shift_morning, shift_evening],
                         },
-                    }).then(shift => {
-                        if (shift) {
-                            const { dataValues: shiftValues } = shift
-                            return shiftValues
+                    }).then(shifts => {
+                        if (size(shifts) > 0) {
+                            return map(shift => {
+                                const { dataValues: shiftValues } = shift
+                                return shiftValues
+                            })(shifts)
                         } else {
-                            return { shift_id: '' }
+                            return []
                         }
                     })
                 })(students)
                 return Promise.all(mappedShifts).then(response => {
                     const filtered = flow(
+                        flatten,
                         filter(({ shift_id }) => shift_id !== ''),
                         uniqBy('shift_id'),
                     )(response)

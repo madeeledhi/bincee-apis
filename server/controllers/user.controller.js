@@ -15,6 +15,7 @@ import {
     destroy,
     sendEmail,
     sendSMS,
+    makePID,
 } from '../utils'
 import config from '../../config/config'
 
@@ -106,6 +107,7 @@ function resetPassword(req, res, next) {
         {},
         'body',
     )(req)
+    const password = makePID()
     return findOne('User', { username }).then(user => {
         if (user) {
             const { dataValues } = user
@@ -114,7 +116,6 @@ function resetPassword(req, res, next) {
             if (selected_option === 'email') {
                 return findOne(type, { email }).then(details => {
                     if (details) {
-                        const password = 'Changeme.1'
                         const html = `<div><b>username</b> : ${username} </br><b>password</b> : ${password} </div>`
                         sendEmail(
                             email,
@@ -141,7 +142,6 @@ function resetPassword(req, res, next) {
             } else {
                 return findOne(type, { phone_no }).then(details => {
                     if (details) {
-                        const password = 'Changeme.1'
                         sendSMS(
                             phone_no,
                             `Password Reset, Your new Password is ${password}`,
