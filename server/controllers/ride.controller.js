@@ -43,9 +43,12 @@ function createRide(req, res) {
                             status,
                             shift_morning,
                             shift_evening,
+                            lat,
+                            lng,
                         } = studentValues
 
                         return (
+                            (lat !== 0 || lng !== 0) &&
                             toLower(status) === 'active' &&
                             ((shift_morning &&
                                 includes(`${shift_morning}`)(shifts)) ||
