@@ -43,12 +43,9 @@ function createRide(req, res) {
                             status,
                             shift_morning,
                             shift_evening,
-                            lat,
-                            lng,
                         } = studentValues
 
                         return (
-                            (lat !== 0 || lng !== 0) &&
                             toLower(status) === 'active' &&
                             ((shift_morning &&
                                 includes(`${shift_morning}`)(shifts)) ||
@@ -97,7 +94,12 @@ function createRide(req, res) {
                     }),
                 )(students)
                 return Promise.all(filteredStudents).then(response =>
-                    res.status(200).json({ status: 200, data: response }),
+                    res.status(200).json({
+                        status: 200,
+                        data: filter(({ lat, lng }) => lat !== 0 || lng !== 0)(
+                            response,
+                        ),
+                    }),
                 )
             }
             return res.status(200).json({
