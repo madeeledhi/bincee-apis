@@ -158,12 +158,12 @@ function createNotification(req, res, next) {
                                     })
                                 },
                             )(studentArray)
-                            return Promise.all(multiply).then(() =>
+                            return Promise.all(multiply).then(response =>
                                 res.status(200).json({
                                     status: 200,
                                     data: {
                                         announcement: dataValues,
-                                        notify,
+                                        notify: response,
                                     },
                                 }),
                             )
