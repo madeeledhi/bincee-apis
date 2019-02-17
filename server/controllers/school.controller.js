@@ -137,20 +137,22 @@ function createNotification(req, res, next) {
                                         student_id,
                                         announcement_id,
                                     }).then(notify => {
-                                        return getFBData(
-                                            'token',
-                                            `${parent_id}`,
-                                        ).then(response => {
-                                            const { token } = response
-                                            if (token) {
-                                                sendBulkNotifications(token, {
-                                                    title,
-                                                    student: fullname,
-                                                    description,
-                                                    type: 'Alert',
-                                                })
-                                            }
-                                        })
+                                        getFBData('token', `${parent_id}`).then(
+                                            response => {
+                                                const { token } = response
+                                                if (token) {
+                                                    sendBulkNotifications(
+                                                        token,
+                                                        {
+                                                            title,
+                                                            student: fullname,
+                                                            description,
+                                                            type: 'Alert',
+                                                        },
+                                                    )
+                                                }
+                                            },
+                                        )
 
                                         return notify
                                     })
