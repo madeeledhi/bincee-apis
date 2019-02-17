@@ -121,7 +121,7 @@ function createNotification(req, res, next) {
                         sendNotification(`${type}-${school_id}`, {
                             title,
                             description,
-                            type: 'Alert',
+                            type: 'Announcement',
                         })
                         return res.status(200).json({
                             status: 200,
@@ -143,15 +143,12 @@ function createNotification(req, res, next) {
                                         ).then(response => {
                                             const { token } = response
                                             if (token) {
-                                                return sendBulkNotifications(
-                                                    token,
-                                                    {
-                                                        title,
-                                                        student: fullname,
-                                                        description,
-                                                        type: 'Announcement',
-                                                    },
-                                                )
+                                                sendBulkNotifications(token, {
+                                                    title,
+                                                    student: fullname,
+                                                    description,
+                                                    type: 'Alert',
+                                                })
                                             }
                                         })
 
