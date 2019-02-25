@@ -173,7 +173,7 @@ function resetPassword(req, res, next) {
 
 function sendCredentials(req, res, next) {
     const { username, password, email, phone_no, type } = getOr({}, 'body')(req)
-    if (type === 'Parent') {
+    if (type === 'Parent' || type === 'School') {
         const html = `<div><b>username</b> : ${username} </br><b>password</b> : ${password} </div>`
         sendEmail(
             email,
