@@ -93,100 +93,85 @@ function createStudent(req, res, next) {
 }
 
 function createNotification(req, res, next) {
-    const { studentArray, last_updated, title, description, type } = getOr(
-        {},
-        'body',
-    )(req)
-
-    const { authorization } = getOr({}, 'headers')(req)
-    const token = flow(
-        split(' '),
-        splitted => splitted[1],
-    )(authorization)
-
-    return findOne('User', { token }).then(resUser => {
-        if (resUser) {
-            const { dataValues } = resUser
-            const { id: school_id } = dataValues
-
-            return createOne('Announcement', {
-                school_id,
-                last_updated,
-                type,
-                title,
-                description,
-            })
-                .then(announcement => {
-                    if (type === 'school') {
-                        sendNotification(`${type}-${school_id}`, {
-                            title,
-                            description,
-                            type: 'Announcement',
-                        })
-                        return res.status(200).json({
-                            status: 200,
-                            data: announcement,
-                        })
-                    } else {
-                        const { dataValues } = announcement
-                        const { id: announcement_id } = dataValues
-                        if (size(studentArray) > 0) {
-                            const multiply = map(
-                                ({ id: student_id, parent_id, fullname }) => {
-                                    return createOne('Notify', {
-                                        student_id,
-                                        announcement_id,
-                                    }).then(notify => {
-                                        getFBData('token', `${parent_id}`).then(
-                                            response => {
-                                                const { token } = response
-                                                if (token) {
-                                                    sendBulkNotifications(
-                                                        token,
-                                                        {
-                                                            title,
-                                                            student: fullname,
-                                                            description,
-                                                            type: 'Alert',
-                                                        },
-                                                    )
-                                                }
-                                            },
-                                        )
-
-                                        return notify
-                                    })
-                                },
-                            )(studentArray)
-                            return Promise.all(multiply).then(response =>
-                                res.status(200).json({
-                                    status: 200,
-                                    data: {
-                                        announcement: dataValues,
-                                        notify: response,
-                                    },
-                                }),
-                            )
-                        } else {
-                            return res.status(200).json({
-                                status: 200,
-                                data: {
-                                    announcement,
-                                    notify: [],
-                                },
-                            })
-                        }
-                    }
-                })
-                .catch(e => {
-                    return next(e)
-                })
-        } else {
-            return res
-                .status(200)
-                .json({ status: 404, data: { message: 'User Not found' } })
-        }
+    const {
+        studentArray,
+        last_updated,
+        title,
+        description,
+        type,
+        school_id,
+    } = getOr({}, 'body')(req)
+    return createOne('Announcement', {
+        school_id,
+        last_updated,
+        type,
+        title,
+        description,
     })
+        .then(announcement => {
+            if (type === 'school') {
+                sendNotification(`${type}-${school_id}`, {
+                    id: announcement.id,
+                    title,
+                    description,
+                    type: 'Announcement',
+                })
+                return res.status(200).json({
+                    status: 200,
+                    data: announcement,
+                })
+            } else {
+                const { dataValues } = announcement
+                const { id: announcement_id } = dataValues
+                if (size(studentArray) > 0) {
+                    const multiply = map(
+                        ({ id: student_id, parent_id, fullname }) => {
+                            return createOne('Notify', {
+                                student_id,
+                                announcement_id,
+                            }).then(notify => {
+                                getFBData('token', `${parent_id}`).then(
+                                    response => {
+                                        const { token } = response
+                                        if (token) {
+                                            sendBulkNotifications(token, {
+                                                id: announcement.id,
+                                                title,
+                                                student: fullname,
+                                                description,
+                                                type: 'Alert',
+                                            })
+                                        }
+                                    },
+                                )
+
+                                return notify
+                            })
+                        },
+                    )(studentArray)
+                    return Promise.all(multiply).then(response =>
+                        res.status(200).json({
+                            status: 200,
+                            data: {
+                                announcement: dataValues,
+                                notify: response,
+                            },
+                        }),
+                    )
+                } else {
+                    return res.status(200).json({
+                        status: 200,
+                        data: {
+                            announcement,
+                            notify: [],
+                        },
+                    })
+                }
+            }
+        })
+        .catch(e => {
+            return next(e)
+        })
 }
 
 function createLeave(req, res, next) {
@@ -1089,7 +1074,19 @@ function parentStudentNotifications(req, res, next) {
                                 const { announcement_id } = ann.dataValues
                                 return findOne('Announcement', {
                                     id: announcement_id,
-                                }).then(annn => annn.dataValues)
+                                }).then(annn => {
+                                    return findOne('NotifyStatus', {
+                                        announcement_id,
+                                    }).then(resStatus => {
+                                        const statusData = resStatus
+                                            ? resStatus.dataValues
+                                            : { status: undefined }
+                                        return {
+                                            ...annn.dataValues,
+                                            status: statusData.status,
+                                        }
+                                    })
+                                })
                             })(announcements)
 
                             return Promise.all(finalResponse).then(rest => ({

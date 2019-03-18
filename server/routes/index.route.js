@@ -11,6 +11,7 @@ import rideRoute from './ride.route'
 import parentRoute from './parent.route'
 import avatarRouter from './avatar.route'
 import driverRouter from './driver.route'
+import notifyRouter from './notifiyStatus.route'
 
 const router = express.Router() // eslint-disable-line new-cap
 
@@ -22,6 +23,9 @@ router.use('/users', userRoutes)
 
 // mount user routes at /admin
 router.use('/admin', adminRoutes)
+
+// mount user routes at /notify
+router.use('/notify', notifyRouter)
 
 // mount user routes at /school
 router.use('/school', schoolRoute)
