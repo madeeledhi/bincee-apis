@@ -62,7 +62,6 @@ export default {
             fullname: Joi.string().required(),
             email: Joi.string().required(),
             status: Joi.string().required(),
-            address: Joi.string().required(),
             phone_no: Joi.string().required(),
         },
     },
