@@ -361,18 +361,24 @@ function createParent(req, res, next) {
                                 ...parent,
                             }).then(savedParent => {
                                 const { dataValues: parentValues } = savedParent
-                                const html = `<div><b>username</b> : ${username} </br><b>password</b> : ${password} </div>`
+
                                 sendEmail(
                                     email,
                                     'Bincee Login Credentials',
-                                    'Sign in to bincee using credentials',
-                                    html,
+                                    {
+                                        username,
+                                        password,
+                                    },
+                                    false,
                                 )
                                 sendEmail(
                                     email,
                                     'Welcome to Bincee',
-                                    'Welcome to Bincee',
-                                    '<div><b>Bincee Tracking Application</b></div>',
+                                    {
+                                        title: 'Welcome',
+                                        message: 'Welcome to Bincee Tracking',
+                                    },
+                                    true,
                                 )
                                 return res
                                     .status(200)

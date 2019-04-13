@@ -116,12 +116,14 @@ function resetPassword(req, res, next) {
             if (selected_option === 'email') {
                 return findOne(type, { email }).then(details => {
                     if (details) {
-                        const html = `<div><b>username</b> : ${username} </br><b>password</b> : ${password} </div>`
                         sendEmail(
                             email,
                             'Password Reset Successfully',
-                            'Sign in to bincee using credentials',
-                            html,
+                            {
+                                username,
+                                password,
+                            },
+                            false,
                         )
                         return update('User', { id }, { password }).then(user =>
                             res.status(200).json({
@@ -174,12 +176,14 @@ function resetPassword(req, res, next) {
 function sendCredentials(req, res, next) {
     const { username, password, email, phone_no, type } = getOr({}, 'body')(req)
     if (type === 'Parent' || type === 'School') {
-        const html = `<div><b>username</b> : ${username} </br><b>password</b> : ${password} </div>`
         sendEmail(
             email,
             'Bincee Login Credentials',
-            'Sign in to bincee using credentials',
-            html,
+            {
+                username,
+                password,
+            },
+            false,
         )
         return res.status(200).json({
             status: 200,
