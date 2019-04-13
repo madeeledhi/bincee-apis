@@ -3,11 +3,7 @@ import Joi from 'joi'
 export default {
     // POST /api/users
     createUser: {
-        body: {
-            username: Joi.string().required(),
-            password: Joi.string().required(),
-            type: Joi.number().required(),
-        },
+        body: {},
     },
 
     passwordreset: {
@@ -20,68 +16,32 @@ export default {
 
     // POST /api/admin
     createSchool: {
-        body: {
-            username: Joi.string().required(),
-            password: Joi.string().required(),
-            name: Joi.string().required(),
-            phone_no: Joi.string().required(),
-        },
+        body: {},
     },
     createLeave: {
-        body: {
-            // from_date: Joi.string().required(),
-            // to_date: Joi.string().required(),
-            // comment: Joi.string().required(),
-            // student_id: Joi.number().required(),
-            // school_id: Joi.number().required(),
-        },
+        body: {},
     },
     createNotification: {
-        body: {
-            description: Joi.string().required(),
-            type: Joi.string().required(),
-        },
+        body: {},
     },
 
     // POST /api/school
     createDriver: {
-        body: {
-            username: Joi.string().required(),
-            password: Joi.string().required(),
-            fullname: Joi.string().required(),
-            status: Joi.string().required(),
-            phone_no: Joi.string().required(),
-        },
+        body: {},
     },
 
     // POST /api/school
     createParent: {
-        body: {
-            username: Joi.string().required(),
-            password: Joi.string().required(),
-            fullname: Joi.string().required(),
-            email: Joi.string().required(),
-            status: Joi.string().required(),
-            phone_no: Joi.string().required(),
-        },
+        body: {},
     },
 
     // POST /api/school
     createStudent: {
-        body: {
-            fullname: Joi.string().required(),
-            grade: Joi.number().required(),
-            parent_id: Joi.number().required(),
-            driver_id: Joi.number().required(),
-            status: Joi.string().required(),
-        },
+        body: {},
     },
 
     createGrade: {
-        body: {
-            grade_name: Joi.string().required(),
-            section: Joi.string().required(),
-        },
+        body: {},
     },
     createShift: {
         body: {},
@@ -89,11 +49,7 @@ export default {
 
     // POST /api/school
     createBus: {
-        body: {
-            registration_no: Joi.string().required(),
-            description: Joi.string().required(),
-            driver_id: Joi.number().required(),
-        },
+        body: {},
     },
 
     // POST /api/auth/login
