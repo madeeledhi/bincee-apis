@@ -27,9 +27,9 @@ export function sendNotification(topic, notification, data) {
     })
 }
 
-export function sendShiftNotification(to, notification, data) {
+export function sendShiftNotification(id, notification, data) {
     const message = {
-        to,
+        to: `parent_${id}`,
         notification,
         data,
     }
@@ -48,9 +48,9 @@ export function sendShiftNotification(to, notification, data) {
     })
 }
 
-export function sendBulkNotifications(to, notification, data) {
+export function sendBulkNotifications(id, notification, data) {
     const message = {
-        to,
+        to: id,
         notification,
         data,
     }

@@ -130,20 +130,13 @@ function createNotification(req, res, next) {
                                 student_id,
                                 announcement_id,
                             }).then(notify => {
-                                getFBData('token', `${parent_id}`).then(
-                                    response => {
-                                        const { token } = response
-                                        if (token) {
-                                            sendBulkNotifications(token, {
-                                                id: announcement.id,
-                                                title,
-                                                student: fullname,
-                                                description,
-                                                type: 'Alert',
-                                            })
-                                        }
-                                    },
-                                )
+                                sendBulkNotifications(`parent_${parent_id}`, {
+                                    id: announcement.id,
+                                    title,
+                                    student: fullname,
+                                    description,
+                                    type: 'Alert',
+                                })
 
                                 return notify
                             })

@@ -76,12 +76,7 @@ export function morningTask() {
                             data: { studentId: student_id },
                             type: 'Morning1',
                         }
-                        getFBData('token', `${parent_id}`).then(response => {
-                            const { token } = response
-                            if (token) {
-                                sendShiftNotification(token, notification)
-                            }
-                        })
+                        sendShiftNotification(parent_id, notification)
                     })(students)
                 })
             }
@@ -127,12 +122,8 @@ export function eveningTask() {
                             data: { studentId: student_id },
                             type: 'Evening1',
                         }
-                        getFBData('token', `${parent_id}`).then(response => {
-                            const { token } = response
-                            if (token) {
-                                sendShiftNotification(token, notification)
-                            }
-                        })
+
+                        sendShiftNotification(parent_id, notification)
                     })(students)
                 })
             }
@@ -183,12 +174,8 @@ export function halfDayTask() {
                             data: { studentId: student_id },
                             type: 'Evening1',
                         }
-                        getFBData('token', `${parent_id}`).then(response => {
-                            const { token } = response
-                            if (token) {
-                                sendShiftNotification(token, notification)
-                            }
-                        })
+
+                        sendShiftNotification(parent_id, notification)
                     })(students)
                 })
             }
