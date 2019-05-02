@@ -12,26 +12,27 @@ const headers = {
 
 export function sendNotification(topic, notification, data) {
     const message = {
-        topic: `/topics/${topic}`,
+        to: `/topics/${topic}`,
         notification,
         data,
     }
     return fetch(notificationUrl, {
-        method: 'POST',
-        body: message,
-        headers: headers,
+        method: 'post',
+        body: JSON.stringify(message),
+        headers,
     })
 }
 
 export function sendShiftNotification(id, notification, data) {
     const message = {
-        topic: `/topics/parent_${id}`,
+        to: `/topics/parent_${id}`,
         notification,
         data,
     }
+
     return fetch(notificationUrl, {
-        method: 'POST',
-        body: message,
+        method: 'post',
+        body: JSON.stringify(message),
         headers: headers,
     })
 }
@@ -43,8 +44,8 @@ export function sendBulkNotifications(id, notification, data) {
         data,
     }
     return fetch(notificationUrl, {
-        method: 'POST',
-        body: message,
+        method: 'post',
+        body: JSON.stringify(message),
         headers: headers,
     })
 }

@@ -216,7 +216,7 @@ function testNotification(req, res, next) {
             console.log('resp: ', resp)
             return res.status(200).json({
                 status: 200,
-                data: { message: 'Notifications sent successfully' },
+                data: resp,
             })
         },
     )
