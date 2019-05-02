@@ -24,7 +24,7 @@ import {
     destroy,
     update,
     sendNotification,
-    sendBulkNotifications,
+    sendShiftNotification,
     sendEmail,
     getFBData,
     sendSMS,
