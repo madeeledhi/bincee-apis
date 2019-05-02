@@ -17,14 +17,6 @@ export function sendNotification(topic, notification, data) {
         data,
     }
     return fetch(notificationUrl, { method: 'POST', headers: headers })
-        .then(response => {
-            console.log('Successfully sent with response: ', response)
-            return response
-        })
-        .catch(err => {
-            console.log('Successfully sent with response: ', err)
-            return err
-        })
 }
 
 export function sendShiftNotification(id, notification, data) {
@@ -34,14 +26,6 @@ export function sendShiftNotification(id, notification, data) {
         data,
     }
     return fetch(notificationUrl, { method: 'POST', headers: headers })
-        .then(response => {
-            console.log('Successfully sent with response: ', response)
-            return response
-        })
-        .catch(err => {
-            console.log('Successfully sent with response: ', err)
-            return err
-        })
 }
 
 export function sendBulkNotifications(id, notification, data) {
@@ -51,12 +35,4 @@ export function sendBulkNotifications(id, notification, data) {
         data,
     }
     return fetch(notificationUrl, { method: 'POST', headers: headers })
-        .then(response => {
-            console.log('Successfully sent with response: ', response)
-            return response
-        })
-        .catch(err => {
-            console.log('Successfully sent with response: ', err)
-            return err
-        })
 }
