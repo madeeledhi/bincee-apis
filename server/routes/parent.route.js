@@ -10,6 +10,6 @@ const router = express.Router() // eslint-disable-line new-cap
 /** GET /api/users - Get list of users */
 router.route('/getData/:id').get(parentCtrl.getUserData)
 
-router.route('/testnotification').get(parentCtrl.testNotification)
+router.route('/testnotification').post(parentCtrl.testNotification)
 
 export default router
