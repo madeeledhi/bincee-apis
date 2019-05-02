@@ -15,6 +15,7 @@ export function sendNotification(topic, notification, data) {
         to: `/topics/${topic}`,
         notification,
         data,
+        priority: 'high',
     }
     return fetch(notificationUrl, {
         method: 'post',
@@ -28,6 +29,7 @@ export function sendShiftNotification(id, notification, data) {
         to: `/topics/parent_${id}`,
         notification,
         data,
+        priority: 'high',
     }
 
     return fetch(notificationUrl, {
@@ -42,6 +44,7 @@ export function sendBulkNotifications(id, notification, data) {
         to: id,
         notification,
         data,
+        priority: 'high',
     }
     return fetch(notificationUrl, {
         method: 'post',
