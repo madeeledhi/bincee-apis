@@ -20,8 +20,9 @@ import {
     destroy,
     update,
     findMultiple,
-    sendBulkNotifications,
+    sendShiftNotification,
     getFBData,
+    sendNotification,
 } from '../utils'
 import config from '../../config/config'
 const Op = Sequelize.Op
@@ -204,33 +205,21 @@ function getDriverShifts(req, res, next) {
 }
 
 function testNotification(req, res, next) {
-    return getFBData('token', '3').then(response => {
-        console.log('response: ', response)
-        const { token } = response
-        const notification = {
-            title: `Test Notification`,
-            body: `Check Notification Recieved`,
-            type: 'Evening1',
-        }
-        if (token) {
-            return sendBulkNotifications(token, notification, {
-                studentId: 1,
-            }).then(resp => {
-                console.log('resp: ', resp)
-                return res.status(200).json({
-                    status: 200,
-                    data: { message: 'Notifications sent successfully' },
-                })
-            })
-        } else {
+    const { topic } = getOr({}, 'body')(req)
+    const notification = {
+        title: `Test Notification`,
+        body: `Check Notification Recieved`,
+        type: 'Evening1',
+    }
+    return sendNotification(topic, notification, { test: 'success' }).then(
+        resp => {
+            console.log('resp: ', resp)
             return res.status(200).json({
-                status: 302,
-                data: {
-                    message: 'Notification Failed',
-                },
+                status: 200,
+                data: { message: 'Notifications sent successfully' },
             })
-        }
-    })
+        },
+    )
 }
 
 export default {

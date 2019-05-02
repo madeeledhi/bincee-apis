@@ -111,7 +111,7 @@ function createNotification(req, res, next) {
     })
         .then(announcement => {
             if (type === 'school') {
-                sendNotification(`${type}-${school_id}`, {
+                sendNotification(`${type}_${school_id}`, {
                     id: announcement.id,
                     title,
                     description,
@@ -131,13 +131,19 @@ function createNotification(req, res, next) {
                                 student_id,
                                 announcement_id,
                             }).then(notify => {
-                                sendBulkNotifications(`parent_${parent_id}`, {
-                                    id: announcement.id,
-                                    title,
-                                    student: fullname,
-                                    description,
-                                    type: 'Alert',
-                                })
+                                sendShiftNotification(
+                                    parent_id,
+                                    {
+                                        id: announcement.id,
+                                        title,
+                                        student: fullname,
+                                        description,
+                                        type: 'Alert',
+                                    },
+                                    {
+                                        student_id,
+                                    },
+                                )
 
                                 return notify
                             })
