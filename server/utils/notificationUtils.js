@@ -16,7 +16,11 @@ export function sendNotification(topic, notification, data) {
         notification,
         data,
     }
-    return fetch(notificationUrl, { method: 'POST', headers: headers })
+    return fetch(notificationUrl, {
+        method: 'POST',
+        body: message,
+        headers: headers,
+    })
 }
 
 export function sendShiftNotification(id, notification, data) {
@@ -25,7 +29,11 @@ export function sendShiftNotification(id, notification, data) {
         notification,
         data,
     }
-    return fetch(notificationUrl, { method: 'POST', headers: headers })
+    return fetch(notificationUrl, {
+        method: 'POST',
+        body: message,
+        headers: headers,
+    })
 }
 
 export function sendBulkNotifications(id, notification, data) {
@@ -34,5 +42,9 @@ export function sendBulkNotifications(id, notification, data) {
         notification,
         data,
     }
-    return fetch(notificationUrl, { method: 'POST', headers: headers })
+    return fetch(notificationUrl, {
+        method: 'POST',
+        body: message,
+        headers: headers,
+    })
 }

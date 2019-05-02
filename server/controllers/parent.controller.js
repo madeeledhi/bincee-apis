@@ -207,8 +207,8 @@ function getDriverShifts(req, res, next) {
 function testNotification(req, res, next) {
     const { topic } = getOr({}, 'body')(req)
     const notification = {
-        title: `Test Notification`,
-        body: `Check Notification Recieved`,
+        title: `Server Test Notification`,
+        body: `Check Notification Server`,
         type: 'Evening1',
     }
     return sendNotification(topic, notification, { test: 'success' }).then(
