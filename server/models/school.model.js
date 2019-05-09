@@ -36,6 +36,26 @@ const School = (sequelize, DataTypes) => {
                 allowNull: false,
                 unique: false,
             },
+            fleetLicenses: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                unique: false,
+            },
+            trial: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                unique: false,
+            },
+            trialDays: {
+                type: DataTypes.INTEGER,
+                allowNull: true,
+                unique: false,
+            },
+            trialDate: {
+                type: DataTypes.DATE,
+                allowNull: true,
+                unique: false,
+            },
             lat: { type: DataTypes.DOUBLE, allowNull: true, unique: false },
             lng: { type: DataTypes.DOUBLE, allowNull: true, unique: false },
         },

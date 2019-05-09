@@ -32,7 +32,17 @@ const Driver = (sequelize, DataTypes) => {
                 unique: false,
                 references: { model: 'School', key: 'school_id' },
             },
-            status: { type: DataTypes.STRING, allowNull: false, unique: false },
+            enableFleet: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                unique: false,
+                references: { model: 'School', key: 'school_id' },
+            },
+            status: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                unique: false,
+            },
         },
         tableConfig,
     )

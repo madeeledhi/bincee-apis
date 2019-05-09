@@ -232,10 +232,15 @@ function createLeave(req, res, next) {
     )
 }
 function createDriver(req, res, next) {
-    const { username, password, fullname, phone_no, status, photo } = getOr(
-        {},
-        'body',
-    )(req)
+    const {
+        username,
+        password,
+        fullname,
+        phone_no,
+        status,
+        photo,
+        enableFleet,
+    } = getOr({}, 'body')(req)
     const { authorization } = getOr({}, 'headers')(req)
     const token = flow(
         split(' '),
@@ -260,6 +265,7 @@ function createDriver(req, res, next) {
                         status,
                         school_id: id,
                         photo,
+                        enableFleet,
                     }
                     return createOne('User', user)
                         .then(savedUser => {

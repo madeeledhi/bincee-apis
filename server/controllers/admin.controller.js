@@ -24,10 +24,13 @@ function createSchool(req, res, next) {
         phone_no,
         email,
         licenses,
+        fleetLicenses,
+        trial,
+        trialDays = null,
+        trialDate = null,
         lat = null,
         lng = null,
     } = getOr({}, 'body')(req)
-
     return findOne('User', { username, password })
         .then(resUser => {
             if (!resUser) {
@@ -39,6 +42,10 @@ function createSchool(req, res, next) {
                     email,
                     phone_no,
                     licenses,
+                    fleetLicenses,
+                    trial,
+                    trialDays,
+                    trialDate,
                     lat,
                     lng,
                 }
