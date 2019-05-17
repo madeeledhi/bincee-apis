@@ -36,7 +36,6 @@ const Driver = (sequelize, DataTypes) => {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
                 unique: false,
-                references: { model: 'School', key: 'school_id' },
             },
             status: {
                 type: DataTypes.STRING,
