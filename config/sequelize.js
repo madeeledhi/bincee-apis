@@ -62,7 +62,7 @@ fs.readdirSync(modelsDir)
 // TODO: Replace sync with migrations
 // TODO: Create a mechanism for DB migrations using sequalize
 sequelize
-    .sync()
+    .sync({ force: true })
     .then(() => {
         const { username, password, type } = user
         console.log('Database synchronized') // eslint-disable-line no-console
