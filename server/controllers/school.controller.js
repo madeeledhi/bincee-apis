@@ -96,7 +96,7 @@ function createStudent(req, res, next) {
 function createNotification(req, res, next) {
     const {
         studentArray,
-        last_updated,
+        last_updated = new Date(),
         title,
         description,
         type,
