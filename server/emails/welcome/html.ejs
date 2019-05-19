@@ -1,230 +1,257 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>Page Title</title>
-        <link href="<%=assets.fonts%>" rel="stylesheet" type="text/css" />
-        <style>
-            body {
-                margin: 0;
-            }
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 
-            .main {
-                width: 600px;
-                background-color: #efefef;
-            }
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="<%=assets.fonts%>" rel="stylesheet" type="text/css" /> <style>
+   
 
-            .header {
-                background-image: url(<%=assets.header%>);
-                height: 401px;
-                background-size: contain;
-                background-repeat: no-repeat;
-            }
+        body {
+            margin: 0;
+        }
 
-            .headText {
-                color: #fff;
-                text-align: center;
-                font-size: 12px;
-                margin: 0;
-                padding: 2px;
-                font-family: 'Montserrat';
-                font-weight: 500;
-            }
+        .headText {
+            color: #FFF;
+            text-align: center;
+            font-size: 12px;
+            margin: 0;
+            padding: 2px;
+            font-family: gotham-light;
+        }
 
-            .logo {
-                margin: 69px 216px 17px 216px;
-            }
+        .textmain {
+            text-align: center;
+            font-size: 13px;
+            font-family: gotham-book;
+        }
 
-            .centerdiv {
-                margin-left: 7em;
-                margin-right: 7em;
-            }
+        .credentials {
+            text-align: center;
+            color: #fff;
+            font-weight: bolder;
+            padding: 12px;
+            border-bottom: 2px solid white;
+            font-size: 20px;
+            font-family: gotham-black;
+            margin: 0 0 17px 0;
+        }
 
-            .textmain {
-                text-align: center;
-                font-size: 13px;
-                font-family: 'Montserrat';
-                font-weight: 400;
-            }
+        .credentialsSection {
+            background-color: #00c6ff;
+            border: 1px transparent;
+            border-radius: 16px;
+        }
 
-            .credentials {
-                text-align: center;
-                color: #fff;
-                font-weight: bolder;
-                padding: 12px;
-                border-bottom: 2px solid white;
-                font-size: 20px;
-                font-family: 'Montserrat';
-                font-weight: 600;
-            }
+        .details {
+            text-align: center;
+            color: #040404;
+            font-size: 14px;
+            margin: 0;
+            padding-top: 16px;
+            font-weight: 100;
+            font-family: gotham-book;
+        }
 
-            .credentialsSection {
-                background-color: #00c6ff;
-                border: 1px transparent;
-                border-radius: 16px;
-            }
+        .downloadApp {
+            text-align: center;
+            color: #042448;
+            font-size: 20px;
+            font-weight: bolder;
+            font-family: gotham-black;
+        }
 
-            .detailsWrap {
-                height: 100px;
-            }
+        .googleStore {
+            width: 160px;
+            margin: 5px;
+        }
 
-            .details {
-                text-align: center;
-                color: #040404;
-                font-size: 14px;
-                margin: 0;
-                padding-top: 16px;
-                font-weight: 100;
-                font-family: 'Montserrat';
-                font-weight: 600;
-            }
+        .appleStore {
+            width: 160px;
+            margin: 5px;
+        }
 
-            .downloadApp {
-                text-align: center;
-                color: #042448;
-                font-size: 20px;
-                font-weight: bolder;
-                font-family: 'Montserrat';
-                font-weight: 600;
-            }
+        .social-icons {
+            display: inline;
+            font-family: 'GothicBook';
+            font-size: 12px;
+            padding: 0 6px;
+        }
 
-            .storeWrapper {
-                text-align: center;
-            }
+        .linkcolor {
+            color: #131a37;
+            margin-top: 3px;
+        }
 
-            .googleStore {
-                width: 160px;
-                margin: 5px;
-            }
+        .socials {
+            text-align: center;
+            padding-top: 64px;
+        }
 
-            .appleStore {
-                width: 160px;
-                margin: 5px;
-            }
+        .url {
+            margin: 5px;
+            font-size: 14px;
+            font-family: gotham-book;
+            color: #000;
+        }
 
-            .urlWrapper {
-                text-align: center;
-                margin-top: 21px;
-            }
+        .credentialstable {
+            width: 60%;
+        }
+    </style>
+</head>
 
-            .url {
-                margin: 5px;
-                font-size: 14px;
-                font-family: 'Montserrat';
-                font-weight: 200;
-                color: #000;
-            }
+<body>
+    <!-- -->
+    <table cellspacing="0" cellpadding="0" width="600px" bgcolor="#efefef">
+        <!-- html table is used , within inline CSS 
+              Cellspacing , cellpaddidng ,width bgcolor
+      -->
+        <tbody>
 
-            .footer {
-                background-image: url(<%=assets.footer%>);
-                height: 111px;
-                background-size: contain;
-                background-repeat: no-repeat;
-            }
-
-            .social-icons {
-                display: inline;
-                font-family: 'Montserrat';
-                font-weight: 200;
-                font-size: 12px;
-                padding: 0 6px;
-            }
-
-            .linkcolor {
-                color: #131a37;
-            }
-
-            .socials {
-                text-align: center;
-                padding-top: 64px;
-            }
-        </style>
-    </head>
-
-    <body>
-        <div class="main">
-            <div class="header">
-                <img src="<%= assets.logo %>" class="logo" alt=" logo" />
-                <h4 class="headText">GOING AN EXTRA MILE FOR YOUR KID</h4>
-            </div>
-            <div class="centerdiv">
-                <p class="textmain">
-                    These paragraphs are styled with CSS These paragraphs are
-                    styled with CSS. These paragraphs are styled with CSS These
-                    paragraphs are styled with CSS.
-                </p>
-                <div class="credentialsSection">
-                    <h4 class="credentials">
-                        <%= title %>
-                    </h4>
-                    <div class="detailsWrap">
-                        <h4 class="details">
-                            <%= message %>
-                        </h4>
-                    </div>
-                </div>
-                <h3 class="downloadApp">Download our app now!</h3>
-                <p class="textmain">
-                    These paragraphs are styled with CSS These paragraphs are
-                    styled with CSS. These paragraphs are styled with CSS These
-                    paragraphs are styled with CSS.
-                </p>
-                <div class="storeWrapper">
-                    <img
-                        class="googleStore"
-                        draggable="false"
-                        src="<%= assets.appleIcon %>"
-                        alt=" googleStore"
-                    />
-                    <img
-                        class="appleStore"
-                        draggable="false"
-                        src="<%= assets.androidIcon %>"
-                        alt=" appleStore"
-                    />
-                </div>
-                <div class="urlWrapper">
+            <tr>
+                <td style="height: 401px">
+                        <img src="<%= assets.header %>" class="logo" alt=" logo" />
+                </td>
+            </tr>
+            <!-- <tr>
+          <td align="center" cellpadding="1">
+            <p>
+              These paragraphs are styled with CSS These paragraphs are styled with CSS.
+              These paragraphs are styled with CSS These paragraphs are styled with CSS.
+            </p>
+          </td>
+        </tr> -->
+            <tr>
+                <td align="center" cellpadding="1">
+                    <table style="padding:10px 110px">
+                        <tbody>
+                            <tr>
+                                <td align="center">
+                                    <p class="textmain">
+                                         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                                        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                                    </p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td align="center" class="responsive-cell">
+                    <table cellspacing="0" cellpadding="0" style="margin: 0px auto ; padding:10px 110px">
+                        <tbody>
+                            <tr>
+                                <td align="center" width="375px" style=" border-radius: 16px 16px 0 0; background-color: #00c6ff ; color:#fff;">
+                                    <h4 class="credentials" style="padding: 12px;
+                    border-bottom: 2px solid white;
+                    font-size: 20px;
+                    font-family: gotham-black;
+                    margin: 0 0 17px 0;"><%= title %></h4>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="375px" align="center" style=" border-radius:  0 0 16px 16px; background-color: #00c6ff">
+                                    
+                                    <h4 class="details"><%= message %></h4>
+                                    <h4 class="details" style="padding-bottom: 45px;"></h4>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            </tr>
+            <tr>
+                <!-- <td align="center" valign="top" bgcolor="#ffffff" class="responsive-cell">
+            <div data-box="button" style="width: 100%; margin-top: 0px; margin-bottom: 0px; text-align: center;">
+              <table border="0" cellpadding="0" cellspacing="0" align="center" data-editable="button" style="margin: 0px auto;">
+                <tbody><tr>
+                    <td valign="top" align="center" class="tdBlock" style="display: inline-block; padding: 17px 38px; border-radius: 38px; background-color: #00c6ff; width: 335px;"><a href="" style="font-family: Arial, Helvetica, sans-serif; color: #ffffff; font-size: 14px; text-decoration:none; font-weight: 700;">
+                            YES, LET’S STAY IN TOUCH
+                        </a></td>
+                </tr>
+            </tbody></table></div>
+        </td> -->
+            </tr>
+            <tr>
+                <td align="center" cellpadding="1">
+                    <table style="padding:10px 110px">
+                        <tbody>
+                            <tr>
+                                <td align="center">
+                                    <h3 class="downloadApp">Download our app now!</h3>
+                                    <p class="textmain">
+                                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                                    Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                                    </p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td align="center" cellpadding="1" width="160">
+                <img class="googleStore" draggable="false" src="<%= assets.appleIcon %>" alt=" googleStore" />
+                <img class="appleStore" draggable="false" src="<%= assets.androidIcon %>" alt=" appleStore" />
+            </td>
+            </tr>
+            <tr>
+                <td align="center" cellpadding="1">
                     <p class="url">For more visit:</p>
                     <a href="www.bincee.com" class="url">www.bincee.com</a>
-                </div>
-            </div>
-            <div class="footer">
-                <div class="socials">
-                    <ul style="    padding: 0;">
-                        <li class="social-icons">
-                            <a class=" linkcolor" href="#">
-                                <img
-                                    draggable="false"
-                                    src="<%= assets.fbIcon %>"
-                                    class="img-fluid"
-                                    alt=""
-                                />
-                            </a>
-                        </li>
-                        &nbsp;&nbsp;
-                        <li class="social-icons">
-                            <a class=" linkcolor" href="#">
-                                <img
-                                    draggable="false"
-                                    src="<%= assets.igIcon %>"
-                                    class="img-fluid"
-                                    alt=""
-                                />
-                            </a>
-                        </li>
-                        &nbsp;&nbsp;
-                        <li class="social-icons">
-                            <a class=" linkcolor" href="#">
-                                <img
-                                    draggable="false"
-                                    src="<%= assets.twIcon %>"
-                                    class="img-fluid"
-                                    alt=""
-                                />
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </body>
+                    <br>
+                    <br>
+                </td>
+            </tr>
+            <tr style="width:600px" width="600px" valign="bottom">
+                <td valign="bottom" background="<%= assets.footer %>" width="600" valign="top" style="background-repeat:no-repeat;background-position:right bottom;direction:ltr;text-align:center; height: 111px;">
+
+                    <table align="center" cellspacing="1" cellpadding="1" width="600px">
+                        <tbody>
+                            <!-- <tr align="center" rowspan="1" ><td ><br><br></td></tr> -->
+                            <tr align="center" rowspan="1">
+                                <td width="35%">
+
+                                </td>
+                                <td>
+
+                                    <a class=" linkcolor" href="#">
+            <img draggable="false" src="<%= assets.fbIcon %>" class="img-fluid" alt="" />                                    </a>
+                                    <br>
+                                </td>
+                                <td valign="bottom">
+
+                                    <a class=" linkcolor" href="#">
+                                        <img draggable="false" src="<%= assets.igIcon %>" class="img-fluid" alt="" />                                    </a>
+                                    <br>
+                                </td>
+                                <td valign="bottom">
+
+
+                                    <a class=" linkcolor" href="#">
+                                    <img draggable="false" src="<%= assets.twIcon %>" class="img-fluid" alt="" />                                    </a>
+                                    <br>
+                                </td>
+                                <td width="35%">
+
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    </tbody>
+    </table>
+
+</body>
+
 </html>
