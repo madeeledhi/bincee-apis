@@ -1,7 +1,7 @@
 #!/bin/bash -x
 
 echo "1/2) Building Process ..."
-gulp
+yarn build
 echo "1/2) Stopping existing node process ..."
 forever stop apis
 
